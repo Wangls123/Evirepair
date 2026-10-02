@@ -1,0 +1,15 @@
+﻿{
+    "single_action_by_scene":  {
+                                   "scene_schedule_override":  1198,
+                                   "periodic_task_scheduling":  700,
+                                   "notification_security":  2166,
+                                   "on_off_schedule":  610,
+                                   "advanced_lighting":  2700,
+                                   "visual_fusion":  384,
+                                   "appliance_monitoring":  1361,
+                                   "climate_window":  2902
+                               },
+    "what_this_split_is":  "single-action samples only, one file per scene_type",
+    "source":  "data/benchmarks/single_scene.jsonl",
+    "total":  12021
+}
