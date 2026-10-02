@@ -1,0 +1,1520 @@
+{
+  "version": "1.1",
+  "description": "Blueprint Action Contracts — per-community-blueprint contracts for B0 inference, Y validation, and B2 filtering.",
+  "scene_to_contract": {
+    "advanced_lighting": null,
+    "climate_window": null,
+    "appliance_monitoring": null,
+    "notification_security": null,
+    "presence_mode": null,
+    "periodic_task_scheduling": null,
+    "visual_fusion": null,
+    "scene_schedule_override": "scene_schedule",
+    "on_off_schedule": "on_off_schedule",
+    "multi_action": "multi_action_composite",
+    "multi_action_fusion": "multi_action_composite"
+  },
+  "scene_to_blueprints": {
+    "climate_window": [
+      "climate_window_restore",
+      "climate_smarter_thermostat",
+      "climate_hvac_auto_adjust",
+      "climate_production_grade"
+    ],
+    "appliance_monitoring": [
+      "appliance_notifications_actions",
+      "appliance_power_state_detect",
+      "appliance_power_google_sheets",
+      "appliance_vibration_sensor"
+    ],
+    "advanced_lighting": [
+      "lighting_motion_maestro_48",
+      "lighting_motion_advanced_v22",
+      "lighting_sensor_comprehensive",
+      "lighting_motion_extended",
+      "lighting_motion_sensor_advanced"
+    ],
+    "notification_security": [
+      "security_osam_sensor_alert",
+      "security_contact_left_open",
+      "security_window_dynamic_wait",
+      "security_ikea_myggbett"
+    ],
+    "presence_mode": [
+      "presence_holiday_away_lighting",
+      "presence_automation_state",
+      "presence_better_thermostat"
+    ],
+    "periodic_task_scheduling": [
+      "periodic_weekly_watering",
+      "periodic_biweekly_cleaning"
+    ],
+    "visual_fusion": [
+      "sgtbatten_frigate_stable",
+      "sgtbatten_frigate_beta",
+      "frigate_llm_notification_v07",
+      "frigate_vision_ai_v09",
+      "outdoor_lighting_frigate"
+    ]
+  },
+  "contracts": {
+    "scene_schedule": {
+      "blueprint_id": "scene_schedule",
+      "blueprint_type": "scene",
+      "action_domains": [
+        "scene",
+        "schedule"
+      ],
+      "allowed_actions": [
+        "scene.turn_on",
+        "schedule.activate"
+      ],
+      "unsupported_actions": [
+        "light.turn_on",
+        "notify.mobile_app",
+        "climate.turn_on",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "schedule_active": true,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "scene.turn_on"
+          ],
+          "blocked_actions": [
+            "schedule.activate"
+          ],
+          "reason_code": "manual_scene_override"
+        }
+      },
+      "registry_scene": "scene_schedule_override",
+      "rule_source": "registry+template"
+    },
+    "on_off_schedule": {
+      "blueprint_id": "on_off_schedule",
+      "blueprint_type": "schedule",
+      "action_domains": [
+        "homeassistant"
+      ],
+      "allowed_actions": [
+        "homeassistant.turn_off",
+        "homeassistant.turn_on"
+      ],
+      "unsupported_actions": [
+        "notify.mobile_app",
+        "light.turn_on",
+        "climate.turn_on",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "in_time_range": true
+      },
+      "conflict_policy": {},
+      "registry_scene": "on_off_schedule",
+      "rule_source": "registry+template"
+    },
+    "climate_window_restore": {
+      "blueprint_id": "climate_window_restore",
+      "blueprint_type": "climate",
+      "action_domains": [
+        "climate",
+        "state"
+      ],
+      "allowed_actions": [
+        "climate.set_hvac_mode",
+        "climate.turn_on",
+        "state.restore",
+        "state.snapshot"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "window_open_check": true,
+        "temperature_check": true,
+        "occupancy_check": true
+      },
+      "conflict_policy": {
+        "energy_saving": {
+          "decision": "allow",
+          "expected_actions": [
+            "climate.turn_off",
+            "state.snapshot"
+          ],
+          "blocked_actions": [],
+          "reason_code": "energy_saving"
+        },
+        "comfort_vs_energy": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "notify.close_window"
+          ],
+          "blocked_actions": [
+            "climate.turn_on"
+          ],
+          "reason_code": "comfort_vs_energy"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Window open → Climate OFF, Window closed → Restore",
+      "category": "climate_window_control",
+      "devices": [
+        "binary_sensor",
+        "climate"
+      ],
+      "tasks": [
+        "window_monitoring",
+        "climate_control",
+        "state_restoration"
+      ],
+      "y1_yaml_union": [
+        "climate.set_hvac_mode"
+      ]
+    },
+    "climate_smarter_thermostat": {
+      "blueprint_id": "climate_smarter_thermostat",
+      "blueprint_type": "climate",
+      "action_domains": [
+        "climate",
+        "state"
+      ],
+      "allowed_actions": [
+        "climate.set_hvac_mode",
+        "climate.turn_on",
+        "logbook.log",
+        "state.restore",
+        "state.snapshot"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "window_open_check": true,
+        "temperature_check": true,
+        "occupancy_check": true
+      },
+      "conflict_policy": {
+        "energy_saving": {
+          "decision": "allow",
+          "expected_actions": [
+            "climate.turn_off",
+            "state.snapshot"
+          ],
+          "blocked_actions": [],
+          "reason_code": "energy_saving"
+        },
+        "comfort_vs_energy": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "notify.close_window"
+          ],
+          "blocked_actions": [
+            "climate.turn_on"
+          ],
+          "reason_code": "comfort_vs_energy"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Smarter Thermostat",
+      "category": "climate_window_control",
+      "devices": [
+        "binary_sensor",
+        "climate",
+        "weather"
+      ],
+      "tasks": [
+        "window_monitoring",
+        "climate_control",
+        "weather_aware"
+      ],
+      "y1_yaml_union": [
+        "climate.set_hvac_mode",
+        "logbook.log"
+      ]
+    },
+    "climate_hvac_auto_adjust": {
+      "blueprint_id": "climate_hvac_auto_adjust",
+      "blueprint_type": "climate",
+      "action_domains": [
+        "climate",
+        "state"
+      ],
+      "allowed_actions": [
+        "climate.turn_off",
+        "state.restore",
+        "state.snapshot"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "window_open_check": true,
+        "temperature_check": true,
+        "occupancy_check": true
+      },
+      "conflict_policy": {
+        "energy_saving": {
+          "decision": "allow",
+          "expected_actions": [
+            "climate.turn_off",
+            "state.snapshot"
+          ],
+          "blocked_actions": [],
+          "reason_code": "energy_saving"
+        },
+        "comfort_vs_energy": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "notify.close_window"
+          ],
+          "blocked_actions": [
+            "climate.turn_on"
+          ],
+          "reason_code": "comfort_vs_energy"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "HVAC automatic adjustment based on open doors/windows",
+      "category": "climate_window_control",
+      "devices": [
+        "binary_sensor",
+        "climate"
+      ],
+      "tasks": [
+        "window_monitoring",
+        "climate_control",
+        "energy_saving"
+      ]
+    },
+    "climate_production_grade": {
+      "blueprint_id": "climate_production_grade",
+      "blueprint_type": "climate",
+      "action_domains": [
+        "climate",
+        "notification",
+        "state"
+      ],
+      "allowed_actions": [
+        "climate.turn_off",
+        "climate.turn_on",
+        "notify.close_window",
+        "state.restore",
+        "state.snapshot"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "window_open_check": true,
+        "temperature_check": true,
+        "occupancy_check": true
+      },
+      "conflict_policy": {
+        "energy_saving": {
+          "decision": "allow",
+          "expected_actions": [
+            "climate.turn_off",
+            "state.snapshot"
+          ],
+          "blocked_actions": [],
+          "reason_code": "energy_saving"
+        },
+        "comfort_vs_energy": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "notify.close_window"
+          ],
+          "blocked_actions": [
+            "climate.turn_on"
+          ],
+          "reason_code": "comfort_vs_energy"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Production-Grade Climate Control (ASHRAE-55)",
+      "category": "climate_window_control",
+      "devices": [
+        "binary_sensor",
+        "climate",
+        "sensor"
+      ],
+      "tasks": [
+        "window_monitoring",
+        "climate_control",
+        "freeze_protection",
+        "humidity_aware"
+      ],
+      "corpus_enriched_actions": [
+        "notify.close_window"
+      ]
+    },
+    "appliance_notifications_actions": {
+      "blueprint_id": "appliance_notifications_actions",
+      "blueprint_type": "notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "counter.increment",
+        "input_number.set_value",
+        "input_select.select_option",
+        "input_text.set_value",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "power_threshold_gte": 10,
+        "away_mode": true
+      },
+      "conflict_policy": {
+        "high_power_away": {
+          "decision": "allow",
+          "expected_actions": [
+            "switch.turn_off",
+            "notify.mobile_app"
+          ],
+          "reason_code": "high_power_away"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Appliance Notifications & Actions",
+      "category": "appliance_power_monitoring",
+      "devices": [
+        "sensor",
+        "notify"
+      ],
+      "tasks": [
+        "power_monitoring",
+        "appliance_state_detection",
+        "notification"
+      ],
+      "y1_yaml_union": [
+        "counter.increment",
+        "input_number.set_value",
+        "input_select.select_option",
+        "input_text.set_value"
+      ]
+    },
+    "appliance_power_state_detect": {
+      "blueprint_id": "appliance_power_state_detect",
+      "blueprint_type": "notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "input_text.set_value",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "power_threshold_gte": 10,
+        "away_mode": true
+      },
+      "conflict_policy": {
+        "high_power_away": {
+          "decision": "allow",
+          "expected_actions": [
+            "switch.turn_off",
+            "notify.mobile_app"
+          ],
+          "reason_code": "high_power_away"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Detect and monitor appliance state based on power consumption",
+      "category": "appliance_power_monitoring",
+      "devices": [
+        "sensor"
+      ],
+      "tasks": [
+        "power_monitoring",
+        "appliance_state_detection",
+        "job_completion"
+      ],
+      "y1_yaml_union": [
+        "input_text.set_value"
+      ]
+    },
+    "appliance_power_google_sheets": {
+      "blueprint_id": "appliance_power_google_sheets",
+      "blueprint_type": "notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "google_sheets.append_sheet",
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "input_datetime.set_datetime",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.mobile_app",
+        "notify.notify",
+        "persistent_notification.create",
+        "persistent_notification.dismiss"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "power_threshold_gte": 10,
+        "away_mode": true
+      },
+      "conflict_policy": {
+        "high_power_away": {
+          "decision": "allow",
+          "expected_actions": [
+            "switch.turn_off",
+            "notify.mobile_app"
+          ],
+          "reason_code": "high_power_away"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Power State Monitor with Google Sheets & Smart Notifications",
+      "category": "appliance_power_monitoring",
+      "devices": [
+        "sensor",
+        "notify"
+      ],
+      "tasks": [
+        "power_monitoring",
+        "state_logging",
+        "notification"
+      ],
+      "y1_yaml_union": [
+        "google_sheets.append_sheet",
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "input_datetime.set_datetime",
+        "notify.notify",
+        "persistent_notification.create",
+        "persistent_notification.dismiss"
+      ]
+    },
+    "appliance_vibration_sensor": {
+      "blueprint_id": "appliance_vibration_sensor",
+      "blueprint_type": "notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.mobile_app",
+        "timer.cancel",
+        "timer.start"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "power_threshold_gte": 10,
+        "away_mode": true
+      },
+      "conflict_policy": {
+        "high_power_away": {
+          "decision": "allow",
+          "expected_actions": [
+            "switch.turn_off",
+            "notify.mobile_app"
+          ],
+          "reason_code": "high_power_away"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Vibration Sensor Filter for Appliances",
+      "category": "appliance_power_monitoring",
+      "devices": [
+        "binary_sensor",
+        "notify"
+      ],
+      "tasks": [
+        "vibration_monitoring",
+        "appliance_state_detection",
+        "notification"
+      ],
+      "y1_yaml_union": [
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "timer.cancel",
+        "timer.start"
+      ]
+    },
+    "lighting_motion_maestro_48": {
+      "blueprint_id": "lighting_motion_maestro_48",
+      "blueprint_type": "lighting",
+      "action_domains": [
+        "lighting",
+        "scene"
+      ],
+      "allowed_actions": [
+        "input_text.set_value",
+        "light.turn_off",
+        "light.turn_on",
+        "logbook.log",
+        "scene.create",
+        "scene.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "illuminance_lte": 100,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override"
+        },
+        "manual_override_active": {
+          "decision": "partial_allow",
+          "expected_actions": [],
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override_active"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Motion-Controlled Lighting 4.8 – The Next-Level Light Maestro",
+      "category": "advanced_motion_lighting",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "light"
+      ],
+      "tasks": [
+        "motion_detection",
+        "illuminance_monitoring",
+        "sun_position",
+        "schedule",
+        "lighting_control"
+      ],
+      "y1_yaml_union": [
+        "input_text.set_value",
+        "logbook.log",
+        "scene.create"
+      ]
+    },
+    "lighting_motion_advanced_v22": {
+      "blueprint_id": "lighting_motion_advanced_v22",
+      "blueprint_type": "lighting",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "light.turn_off",
+        "light.turn_on",
+        "scene.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "illuminance_lte": 100,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override"
+        },
+        "manual_override_active": {
+          "decision": "partial_allow",
+          "expected_actions": [],
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override_active"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Advanced Motion-Activated Light Blueprint V2.2",
+      "category": "advanced_motion_lighting",
+      "devices": [
+        "binary_sensor",
+        "light"
+      ],
+      "tasks": [
+        "motion_detection",
+        "lighting_control",
+        "manual_override"
+      ],
+      "y1_yaml_union": [
+        "scene.turn_on"
+      ]
+    },
+    "lighting_sensor_comprehensive": {
+      "blueprint_id": "lighting_sensor_comprehensive",
+      "blueprint_type": "lighting",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "homeassistant.turn_off",
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "light.turn_off",
+        "light.turn_on",
+        "scene.turn_on",
+        "script.turn_on",
+        "switch.turn_off",
+        "switch.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "illuminance_lte": 100,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override"
+        },
+        "manual_override_active": {
+          "decision": "partial_allow",
+          "expected_actions": [],
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override_active"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Sensor Light - Motion, Door, Sun, Lux, Scenes, Time",
+      "category": "advanced_motion_lighting",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "light",
+        "device_tracker"
+      ],
+      "tasks": [
+        "motion_detection",
+        "door_monitoring",
+        "sun_elevation",
+        "illuminance_monitoring",
+        "scene_control",
+        "night_mode"
+      ],
+      "y1_yaml_union": [
+        "homeassistant.turn_off",
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "scene.turn_on",
+        "script.turn_on",
+        "switch.turn_off",
+        "switch.turn_on"
+      ]
+    },
+    "lighting_motion_extended": {
+      "blueprint_id": "lighting_motion_extended",
+      "blueprint_type": "lighting",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "light.turn_off",
+        "scene.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "illuminance_lte": 100,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override"
+        },
+        "manual_override_active": {
+          "decision": "partial_allow",
+          "expected_actions": [],
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override_active"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Motion-Activated Light Extended",
+      "category": "advanced_motion_lighting",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "light"
+      ],
+      "tasks": [
+        "motion_detection",
+        "illuminance_monitoring",
+        "time_condition",
+        "lighting_control"
+      ],
+      "y1_yaml_union": [
+        "scene.turn_on"
+      ]
+    },
+    "lighting_motion_sensor_advanced": {
+      "blueprint_id": "lighting_motion_sensor_advanced",
+      "blueprint_type": "lighting",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "light.turn_off",
+        "light.turn_on",
+        "scene.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "illuminance_lte": 100,
+        "manual_override": false
+      },
+      "conflict_policy": {
+        "manual_override": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override"
+        },
+        "manual_override_active": {
+          "decision": "partial_allow",
+          "expected_actions": [],
+          "blocked_actions": [
+            "light.turn_on",
+            "light.turn_off"
+          ],
+          "reason_code": "manual_override_active"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Advanced Motion Sensor Automation",
+      "category": "advanced_motion_lighting",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "light"
+      ],
+      "tasks": [
+        "motion_detection",
+        "illuminance_monitoring",
+        "sun_horizon",
+        "time_slot",
+        "lighting_control"
+      ],
+      "y1_yaml_union": [
+        "scene.turn_on"
+      ]
+    },
+    "security_osam_sensor_alert": {
+      "blueprint_id": "security_osam_sensor_alert",
+      "blueprint_type": "security",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "input_text.set_value",
+        "notify.mobile_app",
+        "persistent_notification.create",
+        "persistent_notification.dismiss",
+        "system_log.write"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "silent_period": false
+      },
+      "conflict_policy": {
+        "silent_period": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "notify.mobile_app"
+          ],
+          "reason_code": "silent_period"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "OSAM - Open Sensor Alert Manager",
+      "category": "door_window_security",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "notify"
+      ],
+      "tasks": [
+        "door_window_monitoring",
+        "escalation",
+        "temperature_check",
+        "notification"
+      ],
+      "y1_yaml_union": [
+        "input_boolean.turn_off",
+        "input_boolean.turn_on",
+        "input_text.set_value",
+        "persistent_notification.create",
+        "persistent_notification.dismiss",
+        "system_log.write"
+      ]
+    },
+    "security_contact_left_open": {
+      "blueprint_id": "security_contact_left_open",
+      "blueprint_type": "security",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "silent_period": false
+      },
+      "conflict_policy": {
+        "silent_period": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "notify.mobile_app"
+          ],
+          "reason_code": "silent_period"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Contact Sensor Left Open Notification",
+      "category": "door_window_security",
+      "devices": [
+        "binary_sensor",
+        "notify"
+      ],
+      "tasks": [
+        "door_window_monitoring",
+        "timeout_alert",
+        "notification"
+      ]
+    },
+    "security_window_dynamic_wait": {
+      "blueprint_id": "security_window_dynamic_wait",
+      "blueprint_type": "security",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "notify.mobile_app",
+        "notify.notify"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "silent_period": false
+      },
+      "conflict_policy": {
+        "silent_period": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "notify.mobile_app"
+          ],
+          "reason_code": "silent_period"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Open Window Notification with dynamic waiting-time",
+      "category": "door_window_security",
+      "devices": [
+        "binary_sensor",
+        "sensor",
+        "notify"
+      ],
+      "tasks": [
+        "window_monitoring",
+        "temperature_aware",
+        "dynamic_timeout",
+        "notification"
+      ],
+      "y1_yaml_union": [
+        "notify.notify"
+      ]
+    },
+    "security_ikea_myggbett": {
+      "blueprint_id": "security_ikea_myggbett",
+      "blueprint_type": "security",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "motion_required": true,
+        "silent_period": false
+      },
+      "conflict_policy": {
+        "silent_period": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "notify.mobile_app"
+          ],
+          "reason_code": "silent_period"
+        }
+      },
+      "rule_source": "community_blueprint",
+      "blueprint_name": "IKEA MYGGBETT Door/Window Sensor (Matter)",
+      "category": "door_window_security",
+      "devices": [
+        "binary_sensor"
+      ],
+      "tasks": [
+        "door_window_monitoring",
+        "multi_stage_action"
+      ]
+    },
+    "presence_holiday_away_lighting": {
+      "blueprint_id": "presence_holiday_away_lighting",
+      "blueprint_type": "security",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "homeassistant.turn_off",
+        "homeassistant.turn_on",
+        "light.turn_off",
+        "light.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "presence_required": true
+      },
+      "conflict_policy": {},
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Holiday & Away Lighting",
+      "category": "presence_mode",
+      "devices": [
+        "light",
+        "input_boolean"
+      ],
+      "tasks": [
+        "presence_simulation",
+        "away_mode",
+        "lighting_control"
+      ],
+      "y1_yaml_union": [
+        "homeassistant.turn_off",
+        "homeassistant.turn_on"
+      ]
+    },
+    "presence_automation_state": {
+      "blueprint_id": "presence_automation_state",
+      "blueprint_type": "automation",
+      "action_domains": [
+        "automation",
+        "lighting"
+      ],
+      "allowed_actions": [
+        "automation.turn_off",
+        "automation.turn_on",
+        "light.turn_off",
+        "light.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "presence_required": true
+      },
+      "conflict_policy": {},
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Automation state based on presence",
+      "category": "presence_mode",
+      "devices": [
+        "person",
+        "device_tracker"
+      ],
+      "tasks": [
+        "presence_detection",
+        "automation_control"
+      ],
+      "y1_yaml_union": [
+        "automation.turn_off",
+        "automation.turn_on"
+      ]
+    },
+    "presence_better_thermostat": {
+      "blueprint_id": "presence_better_thermostat",
+      "blueprint_type": "climate",
+      "action_domains": [
+        "climate"
+      ],
+      "allowed_actions": [
+        "climate.set_preset_mode",
+        "climate.turn_on",
+        "number.set_value",
+        "system_log.write"
+      ],
+      "unsupported_actions": [
+        "alarm.trigger",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "presence_required": true
+      },
+      "conflict_policy": {},
+      "rule_source": "community_blueprint",
+      "blueprint_name": "Better Thermostat with Presence Presets",
+      "category": "presence_mode",
+      "devices": [
+        "climate",
+        "binary_sensor",
+        "person"
+      ],
+      "tasks": [
+        "presence_detection",
+        "climate_control",
+        "preset_management"
+      ],
+      "y1_yaml_union": [
+        "climate.set_preset_mode",
+        "number.set_value",
+        "system_log.write"
+      ]
+    },
+    "periodic_weekly_watering": {
+      "blueprint_id": "periodic_weekly_watering",
+      "blueprint_type": "periodic",
+      "action_domains": [
+        "schedule",
+        "script"
+      ],
+      "allowed_actions": [
+        "script.water_plants"
+      ],
+      "unsupported_actions": [
+        "light.turn_on",
+        "notify.mobile_app",
+        "climate.turn_on",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "schedule_due": true,
+        "late_blocked": false
+      },
+      "conflict_policy": {
+        "late_blocked": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "script.water_plants",
+            "script.vacuum_clean"
+          ],
+          "reason_code": "late_blocked"
+        }
+      },
+      "schedule_name": "weekly_watering",
+      "rule_source": "periodic_schedule_blueprint"
+    },
+    "periodic_biweekly_cleaning": {
+      "blueprint_id": "periodic_biweekly_cleaning",
+      "blueprint_type": "periodic",
+      "action_domains": [
+        "schedule",
+        "script"
+      ],
+      "allowed_actions": [
+        "script.vacuum_clean",
+        "script.water_plants"
+      ],
+      "unsupported_actions": [
+        "light.turn_on",
+        "notify.mobile_app",
+        "climate.turn_on",
+        "alarm_control_panel.trigger"
+      ],
+      "gates": {
+        "schedule_due": true,
+        "late_blocked": false
+      },
+      "conflict_policy": {
+        "late_blocked": {
+          "decision": "blocked",
+          "blocked_actions": [
+            "script.water_plants",
+            "script.vacuum_clean"
+          ],
+          "reason_code": "late_blocked"
+        }
+      },
+      "schedule_name": "biweekly_cleaning",
+      "rule_source": "periodic_schedule_blueprint",
+      "corpus_enriched_actions": [
+        "script.water_plants"
+      ]
+    },
+    "multi_action_composite": {
+      "blueprint_id": "multi_action_composite",
+      "blueprint_type": "multi_action",
+      "action_domains": [
+        "climate",
+        "homeassistant",
+        "lighting",
+        "notification",
+        "scene",
+        "schedule",
+        "script",
+        "state",
+        "switch",
+        "vision_analysis"
+      ],
+      "allowed_actions": [
+        "climate.turn_off",
+        "climate.turn_on",
+        "homeassistant.turn_off",
+        "homeassistant.turn_on",
+        "light.turn_off",
+        "light.turn_on",
+        "llmvision.analyze_image",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app",
+        "scene.turn_on",
+        "schedule.activate",
+        "script.vacuum_clean",
+        "script.water_plants",
+        "state.restore",
+        "state.snapshot",
+        "switch.turn_off"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger"
+      ],
+      "multi_action_policy": {
+        "allow_partial": true,
+        "output_contract": "expected_blocked_split"
+      },
+      "conflict_policy": {
+        "partial_constraint_conflict": {
+          "decision": "partial_allow",
+          "expected_actions": [
+            "light.turn_on",
+            "notify.mobile_app"
+          ],
+          "blocked_actions": [
+            "climate.turn_on"
+          ],
+          "reason_code": "partial_constraint_conflict"
+        }
+      },
+      "rule_source": "composite_scene_union"
+    },
+    "sgtbatten_frigate_stable": {
+      "blueprint_id": "sgtbatten_frigate_stable",
+      "blueprint_type": "frigate_notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger",
+        "climate.turn_on",
+        "light.turn_on",
+        "alarm.trigger"
+      ],
+      "gates": {
+        "person_detected": true,
+        "detection_confidence_gt": 0.8
+      },
+      "legacy_gates": {
+        "event_gate": {
+          "field": "person_detected",
+          "operator": "is",
+          "value": true
+        },
+        "detection_gate": {
+          "field": "detection_confidence",
+          "operator": ">",
+          "value": 0.8,
+          "source": "yaml_top_score"
+        }
+      },
+      "rule_source": "yaml",
+      "registry_type_actions": [
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ]
+    },
+    "sgtbatten_frigate_beta": {
+      "blueprint_id": "sgtbatten_frigate_beta",
+      "blueprint_type": "frigate_notification",
+      "action_domains": [
+        "notification"
+      ],
+      "allowed_actions": [
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger",
+        "climate.turn_on",
+        "light.turn_on",
+        "alarm.trigger"
+      ],
+      "gates": {
+        "person_detected": true,
+        "detection_confidence_gt": 0.8
+      },
+      "legacy_gates": {
+        "event_gate": {
+          "field": "person_detected",
+          "operator": "is",
+          "value": true
+        },
+        "detection_gate": {
+          "field": "detection_confidence",
+          "operator": ">",
+          "value": 0.8,
+          "source": "yaml_top_score"
+        }
+      },
+      "rule_source": "yaml",
+      "registry_type_actions": [
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ]
+    },
+    "frigate_llm_notification_v07": {
+      "blueprint_id": "frigate_llm_notification_v07",
+      "blueprint_type": "frigate_llm_notification",
+      "action_domains": [
+        "notification",
+        "vision_analysis"
+      ],
+      "allowed_actions": [
+        "llmvision.analyze_image",
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger",
+        "climate.turn_on",
+        "light.turn_on",
+        "alarm.trigger"
+      ],
+      "gates": {
+        "person_detected": true
+      },
+      "legacy_gates": {
+        "event_gate": {
+          "field": "person_detected",
+          "operator": "is",
+          "value": true
+        }
+      },
+      "rule_source": "yaml",
+      "registry_type_actions": [
+        "notify.appliance_finished",
+        "notify.appliance_started",
+        "notify.close_window",
+        "notify.mobile_app"
+      ]
+    },
+    "frigate_vision_ai_v09": {
+      "blueprint_id": "frigate_vision_ai_v09",
+      "blueprint_type": "vision_ai_analysis",
+      "action_domains": [
+        "vision_analysis"
+      ],
+      "allowed_actions": [
+        "llmvision.analyze_image"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger",
+        "climate.turn_on",
+        "light.turn_on",
+        "alarm.trigger"
+      ],
+      "gates": {
+        "camera_event": true
+      },
+      "legacy_gates": {
+        "event_gate": {
+          "field": "camera_event",
+          "operator": "is",
+          "value": true
+        }
+      },
+      "rule_source": "summary_only"
+    },
+    "outdoor_lighting_frigate": {
+      "blueprint_id": "outdoor_lighting_frigate",
+      "blueprint_type": "visual_lighting",
+      "action_domains": [
+        "lighting"
+      ],
+      "allowed_actions": [
+        "light.turn_off",
+        "light.turn_on"
+      ],
+      "unsupported_actions": [
+        "alarm_control_panel.trigger",
+        "climate.turn_on",
+        "notify.mobile_app",
+        "alarm.trigger"
+      ],
+      "gates": {
+        "person_detected": true,
+        "illuminance_lte": 300
+      },
+      "legacy_gates": {
+        "event_gate": {
+          "field": "person_detected",
+          "operator": "is",
+          "value": true
+        },
+        "lighting_gate": {
+          "field": "illuminance",
+          "operator": "<=",
+          "value": 300
+        }
+      },
+      "rule_source": "summary_only",
+      "boundary_policy": {
+        "illuminance_boundary_band": [
+          280,
+          380
+        ],
+        "on_boundary": "secondary_check"
+      },
+      "registry_type_actions": [
+        "light.turn_off",
+        "light.turn_on"
+      ]
+    },
+    "camera_frigate_vision_llm": {
+      "allowed_actions": [
+        "automation.turn_off",
+        "automation.turn_on",
+        "downloader.download_file",
+        "llmvision.video_analyzer",
+        "logbook.log",
+        "persistent_notification.create"
+      ],
+      "y1_yaml_union": [
+        "automation.turn_off",
+        "automation.turn_on",
+        "downloader.download_file",
+        "llmvision.video_analyzer",
+        "logbook.log",
+        "persistent_notification.create"
+      ]
+    },
+    "camera_frigate_intelligent": {
+      "allowed_actions": [
+        "automation.turn_off",
+        "automation.turn_on",
+        "input_text.set_value",
+        "logbook.log",
+        "telegram_bot.send_photo",
+        "telegram_bot.send_video"
+      ],
+      "y1_yaml_union": [
+        "automation.turn_off",
+        "automation.turn_on",
+        "input_text.set_value",
+        "logbook.log",
+        "telegram_bot.send_photo",
+        "telegram_bot.send_video"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+You are given a parent multi-component smart-home automation and current environment evidence, including sibling context and currently emitted component behaviors.
+
+Based only on the supplied parent and component automation definitions, runtime observations, entity information, sibling context, and currently emitted behaviors, infer the final parent-level set of semantic actions that should occur NOW.
+
+Return ONLY JSON with this schema:
+{
+  "decision": "ACTION_SET" or "NO_ACTION",
+  "final_action_set": [
+    {
+      "capability": string,
+      "operation": string,
+      "target": string or "UNKNOWN",
+      "semantic_payload": object
+    }
+  ],
+  "short_reason": string
+}
+
+Rules:
+- Use only the supplied fields. Do not invent devices, sensors, measurements, or events.
+- If decision is NO_ACTION, final_action_set must be [].
+- If decision is ACTION_SET, list only actions uniquely supported by the supplied evidence.
+- If a target is not uniquely supported, use "UNKNOWN".
+- If evidence is insufficient or contradictory, return NO_ACTION and an empty final_action_set.
+- short_reason must be at most one short sentence. It is not used for scoring.
+- Do not write chain-of-thought. Do not explain beyond short_reason.

@@ -1,0 +1,18 @@
+{
+  "method_id": "ss_trhr_v1",
+  "llm": false,
+  "entry": "smarthome_mdf.ss_trhr_repair.pipeline.repair_sample",
+  "published_score": [
+    "repair_sample",
+    "apply_strict_v2",
+    "map_repaired",
+    "set_remove_v1",
+    "apply_generic_gate",
+    "apply_verifier"
+  ],
+  "strict_v2": {
+    "hvac_r1": "climate.set_hvac_mode with an open window and an empty or active mode is rewritten to hvac_mode=off",
+    "active_hvac_modes": ["heat", "cool", "auto", "heat_cool", "dry", "fan_only"],
+    "drop_parameter_keys": ["level", "logger"]
+  }
+}

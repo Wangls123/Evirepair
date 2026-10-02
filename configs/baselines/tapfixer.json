@@ -1,0 +1,13 @@
+{
+  "name": "TAPFixer",
+  "vendored": false,
+  "local_adapter": "baselines/tapfixer",
+  "detection": "baselines/scripts/run_tapfixer_ss_native.py",
+  "source": "https://github.com/q1uTr5th/TAPFixer",
+  "archive": "https://codeload.github.com/q1uTr5th/TAPFixer/zip/refs/heads/master",
+  "archive_sha256": "1f2ab3c7d8205a5095cb1e06b988c262a8b5721f1ac9d94f77c3eec16a8d7abb",
+  "python": "3.8",
+  "compiler": "baselines.tapfixer.ss_property_compiler.compile_ss_property_tapfixer",
+  "output_adapter": "baselines.tapfixer.output_adapter.convert_ss_fix",
+  "prediction_file": "baselines/predictions/tapfixer/native_ss_predictions.jsonl"
+}

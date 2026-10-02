@@ -1,0 +1,36 @@
+{
+  "what_this_file_is": "OpenHAB 多规则数据上的 EviRepair 迁移结果。只含多规则，不含单规则。",
+  "track": "multi_rule",
+  "method": "EviRepair Frozen Repair (ss_trhr + Strict-v2)",
+  "execution_label": "OPENHAB_SIMULATOR_SEMANTICS",
+  "generated": "2026-09-24T04:39:45Z",
+  "split": "live_split 中启用规则数大于 1 的场景",
+  "n": 371,
+  "n_conflicted": 233,
+  "metrics": {
+    "n_intent": 371,
+    "n_infrastructure_failure": 0,
+    "n_repair_ready": 371,
+    "n_conflicted": 233,
+    "runtime_success_intent": 1.0,
+    "runtime_success_ready": 1.0,
+    "before_semantic_success": 0.5094,
+    "after_semantic_success": 0.8814,
+    "semantic_repair_gain": 0.372,
+    "complete_repair_rate": 0.8112,
+    "mostly_plus_complete": 0.8112,
+    "micro_carr": 0.8112,
+    "macro_carr": 0.8112,
+    "conflict_resolution_rate": 0.8112,
+    "false_repair_rate": 0.372,
+    "new_conflict_rate": 0.0,
+    "grounding_success_rate": 1.0,
+    "total_conflict_actions": 233,
+    "repaired_conflict_actions": 189,
+    "partial_buckets": {
+      "FULLY_REPAIRED": 189,
+      "UNREPAIRED": 44
+    }
+  },
+  "note": "Frozen Repair operators + Strict-v2 HVAC R1/payload drop. MA parent uses set_remove_v1 only (HA evidence-ownership gate/verifier not claimed on OpenHAB). Simulator semantics, not live OpenHAB latency."
+}

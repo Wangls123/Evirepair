@@ -1,0 +1,22 @@
+You are given a smart-home automation snapshot and the current observed environment.
+
+Based only on the supplied automation definition, runtime state, observations, entity information, and currently emitted behavior, infer the behavior that should occur in this scene NOW.
+
+Return ONLY JSON with this schema:
+{
+  "decision": "ACTION" or "NO_ACTION",
+  "capability": string or "UNKNOWN" or null,
+  "operation": string or "UNKNOWN" or null,
+  "target": string or "UNKNOWN" or null,
+  "semantic_payload": object or null,
+  "short_reason": string
+}
+
+Rules:
+- Use only the supplied fields. Do not invent devices, sensors, measurements, or events.
+- If decision is NO_ACTION, set capability, operation, target, and semantic_payload to null.
+- If decision is ACTION, fill capability, operation, target, and semantic_payload from the evidence.
+- If a slot is not uniquely supported, use "UNKNOWN" rather than guessing a concrete value.
+- If the evidence does not uniquely support an action now, choose NO_ACTION.
+- short_reason must be at most one short sentence. It is not used for scoring.
+- Do not write chain-of-thought. Do not explain beyond short_reason.

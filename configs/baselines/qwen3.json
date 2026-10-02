@@ -1,0 +1,20 @@
+{
+  "name": "Qwen3",
+  "vendored": false,
+  "api_base": "",
+  "model_ids": ["qwen3-14b", "qwen3-32b"],
+  "modes": ["direct", "constrained"],
+  "weights": {
+    "qwen3-14b": "https://huggingface.co/Qwen/Qwen3-14B",
+    "qwen3-32b": "https://huggingface.co/Qwen/Qwen3-32B"
+  },
+  "model_docs": "https://www.alibabacloud.com/help/en/model-studio/models",
+  "detection": "scripts/eval_llm_repair_baselines.py",
+  "runner": "scripts/run_qwen_intervention.py",
+  "prediction_files": {
+    "Qwen3-14B Direct": "baselines/qwen_open/14b/direct/ss/predictions.jsonl",
+    "Qwen3-14B Constrained": "baselines/qwen_open/14b/constrained/ss/predictions.jsonl",
+    "Qwen3-32B Direct": "baselines/qwen_open/32b/direct/ss/predictions.jsonl",
+    "Qwen3-32B Constrained": "baselines/qwen_open/32b/constrained/ss/predictions.jsonl"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "State-only",
+  "detection": "scripts/eval_ss_trhr_credibility.py:baseline_state_only",
+  "reads": ["observation", "entity_observations", "b0_action"],
+  "rules": [
+    "EVENT and HELPER services are kept",
+    "REMOVE when device_already_satisfied is true",
+    "REMOVE light.turn_on when illuminance is at least 80",
+    "REMOVE light.turn_on when motion is false",
+    "REMOVE climate.turn_off when the window is not open",
+    "MODIFY a STATE action with an empty target to the unique entity of that domain"
+  ],
+  "illuminance_turn_on_max_exclusive": 80
+}

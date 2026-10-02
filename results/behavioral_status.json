@@ -1,0 +1,36 @@
+{
+  "what_this_file_is": "Decision performance across behavioral assessment categories. Multi-category detections are assigned to the first category, Unsupported.",
+  "assignment": "A sample may match more than one category. Those samples are counted only in the first category in Justified, Unsupported, Incorrect, Missing. The 68 Unsupported+Incorrect detections therefore join Unsupported.",
+  "unassigned_not_in_table": 1308,
+  "multi_assigned_to_first_category": 68,
+  "categories": [
+    {
+      "category": "Justified",
+      "cases": 3290,
+      "correct": 3111,
+      "incorrect": 179,
+      "accuracy": 0.9456
+    },
+    {
+      "category": "Unsupported",
+      "cases": 3349,
+      "correct": 3349,
+      "incorrect": 0,
+      "accuracy": 1.0
+    },
+    {
+      "category": "Incorrect",
+      "cases": 3297,
+      "correct": 1769,
+      "incorrect": 1528,
+      "accuracy": 0.5365
+    },
+    {
+      "category": "Missing",
+      "cases": 777,
+      "correct": 662,
+      "incorrect": 115,
+      "accuracy": 0.852
+    }
+  ]
+}

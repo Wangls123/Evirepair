@@ -1,0 +1,28 @@
+{
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "max_tokens": 1024,
+  "timeout_sec": 120,
+  "max_retries": 5,
+  "retry_backoff_sec": [1, 2, 4, 8, 16],
+  "seed": 20260919,
+  "concurrency": 4,
+  "target_rpm": 60.0,
+  "thinking": "enable_thinking=false",
+  "enable_thinking": false,
+  "tools": "OFF",
+  "web_search": "OFF",
+  "retrieval": "OFF",
+  "function_tools": "OFF",
+  "json_response_format": true,
+  "key_source": "DASHSCOPE_API_KEY environment variable only",
+  "base_url_source": "DASHSCOPE_BASE_URL or default DashScope compatible-mode /v1",
+  "default_base_url": "",
+  "models": {
+    "14B": "qwen3-14b",
+    "32B": "qwen3-32b",
+    "72B": null
+  },
+  "model_id_source": "CLI --model is the exact DashScope ID. Documented pair is qwen3-14b and qwen3-32b. Qwen3 has no 72B dense model; qwen3-72b returned 404. Do not label 32B as 72B. Do not substitute qwen-plus or qwen-max.",
+  "gold_family_bias": "Gold was produced with Qwen Plus. These baselines are Qwen3 14B/32B in the same family. Gold-based agreement may reflect family consistency and is not independent semantic ground truth."
+}

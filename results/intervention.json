@@ -1,0 +1,15 @@
+{
+  "what_this_file_is": "Intervention identification performance on the Home Assistant single-scene split. These rows match the paper table.",
+  "n": 12021,
+  "rows": [
+    {"method": "Service Blacklist", "recall_pct": "56.71", "f1": "0.7237", "fir_pct": "0.00", "ba_pct": "78.35", "tp": 4951, "fp": 0, "fn": 3780, "tn": 3290, "source": "recomputed"},
+    {"method": "State-only", "recall_pct": "29.24", "f1": "0.4525", "fir_pct": "0.00", "ba_pct": "64.62", "tp": 2553, "fp": 0, "fn": 6178, "tn": 3290, "source": "recomputed"},
+    {"method": "AutoTap", "recall_pct": "39.41", "f1": "0.5654", "fir_pct": "0.00", "ba_pct": "69.71", "tp": 3441, "fp": 0, "fn": 5290, "tn": 3290, "source": "recorded"},
+    {"method": "TAPFixer", "recall_pct": "27.77", "f1": "0.4192", "fir_pct": "12.58", "ba_pct": "57.60", "tp": 2425, "fp": 414, "fn": 6306, "tn": 2876, "source": "recorded"},
+    {"method": "Qwen3-14B Direct", "recall_pct": "88.42", "f1": "0.8405", "fir_pct": "58.36", "ba_pct": "65.03", "tp": 7720, "fp": 1920, "fn": 1011, "tn": 1370, "source": "recorded"},
+    {"method": "Qwen3-14B Constrained", "recall_pct": "98.84", "f1": "0.9358", "fir_pct": "32.95", "ba_pct": "82.95", "tp": 8630, "fp": 1084, "fn": 101, "tn": 2206, "source": "recorded"},
+    {"method": "Qwen3-32B Direct", "recall_pct": "87.65", "f1": "0.9126", "fir_pct": "11.79", "ba_pct": "87.93", "tp": 7653, "fp": 388, "fn": 1078, "tn": 2902, "source": "recorded"},
+    {"method": "Qwen3-32B Constrained", "recall_pct": "97.96", "f1": "0.9701", "fir_pct": "10.64", "ba_pct": "93.66", "tp": 8553, "fp": 350, "fn": 178, "tn": 2940, "source": "recorded"},
+    {"method": "EviRepair", "recall_pct": "82.84", "f1": "0.8961", "fir_pct": "5.44", "ba_pct": "88.70", "tp": 7233, "fp": 179, "fn": 1498, "tn": 3111, "source": "recomputed"}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Service Blacklist",
+  "detection": "scripts/eval_ss_trhr_credibility.py:baseline_blacklist",
+  "reads": ["b0_action.service"],
+  "operator": "REMOVE when the service is listed, otherwise KEEP",
+  "services": [
+    "system_log.write",
+    "google_sheets.append_sheet",
+    "logbook.log",
+    "input_boolean.turn_off",
+    "notify.mobile_app",
+    "notify.notify",
+    "persistent_notification.create",
+    "input_boolean.turn_on",
+    "input_text.set_value",
+    "schedule.activate",
+    "scene.turn_on",
+    "scene.turn_off"
+  ],
+  "prefixes": ["input_boolean.", "notify."]
+}

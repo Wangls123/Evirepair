@@ -1,0 +1,13 @@
+{
+  "name": "AutoTap",
+  "vendored": false,
+  "local_adapter": "baselines/autotap",
+  "detection": "baselines/scripts/run_autotap_native.py",
+  "source": "https://github.com/zlfben/autotap",
+  "commit": "fe0fdd638a1b170b1ac71b0f2921ab54d547893b",
+  "docker_image": "zlfben/autotap_backend:icse",
+  "docker_pull": "docker pull zlfben/autotap_backend:icse",
+  "compiler": "baselines.autotap.property_compiler.compile_ss_property",
+  "output_adapter": "baselines.autotap.output_adapter.convert_taps",
+  "prediction_file": "baselines/predictions/autotap/native_ss_predictions.jsonl"
+}

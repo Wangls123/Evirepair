@@ -1,0 +1,28 @@
+You are given a parent multi-component automation, environment evidence, sibling context, currently emitted component behaviors, and a closed platform vocabulary of legal services, capabilities, operations, entities, and payload fields.
+
+Based only on the supplied evidence and the closed vocabulary, infer the final parent semantic action set that should occur NOW.
+
+Return ONLY JSON:
+{
+  "decision": "ACTION_SET" or "NO_ACTION",
+  "final_action_set": [
+    {
+      "capability": string,
+      "operation": string,
+      "target": string or "UNKNOWN",
+      "semantic_payload": object,
+      "service": string
+    }
+  ],
+  "short_reason": string
+}
+
+Constraints:
+- If decision is NO_ACTION, final_action_set must be [].
+- Every service, if present, MUST be in the legal service list.
+- capability and operation MUST be taken from the listed vocabularies when determined.
+- Payload keys MUST be legal for that service.
+- Do not invent entities or facts.
+- If evidence is insufficient, return NO_ACTION and [].
+- short_reason must be at most one short sentence. It is not used for scoring.
+- Do not write chain-of-thought.

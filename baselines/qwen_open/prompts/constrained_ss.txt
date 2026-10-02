@@ -1,0 +1,25 @@
+You are given a smart-home automation snapshot, environment evidence, and a closed platform vocabulary of legal capabilities, operations, services, entities, and payload fields.
+
+Based only on the supplied automation definition, runtime state, observations, entity information, currently emitted behavior, and the closed vocabulary, infer the behavior that should occur in this scene NOW.
+
+Return ONLY JSON with this schema:
+{
+  "decision": "ACTION" or "NO_ACTION",
+  "capability": string or "UNKNOWN" or null,
+  "operation": string or "UNKNOWN" or null,
+  "target": string or "UNKNOWN" or null,
+  "semantic_payload": object or null,
+  "service": string or null,
+  "short_reason": string
+}
+
+Constraints:
+- If decision is NO_ACTION, set capability, operation, target, semantic_payload, and service to null.
+- If decision is ACTION, service MUST be one of the listed legal services when a legal service is uniquely determined.
+- capability and operation MUST be taken from the listed vocabularies when determined.
+- semantic_payload keys MUST be among the listed legal fields for that service.
+- target, if required by the service schema, MUST be one of the listed entities or "UNKNOWN".
+- Use only supplied evidence. Do not invent facts.
+- If the decision is not uniquely supported, return NO_ACTION.
+- short_reason must be at most one short sentence. It is not used for scoring.
+- Do not write chain-of-thought.

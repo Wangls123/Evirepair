@@ -1,0 +1,68 @@
+{
+  "what_this_file_is": "Single-Scene 与 Multi-Action 行为修复消融结果。只保留论文表中的模块，不含其他消融。",
+  "N_ss": 12021,
+  "N_ma": 2400,
+  "columns": {
+    "EM": "single-scene exact match",
+    "RSR": "repair success among originally inexact cases",
+    "FRR": "false repair among all single-scene cases",
+    "Parent_EM": "multi-action parent set exact match",
+    "Action_F1": "unweighted mean of per-parent action F1"
+  },
+  "variants": [
+    {
+      "variant": "Full",
+      "module": "repair_sample then Strict-v2; multi-action then set-remove, generic gate, and verifier",
+      "single_scene": {"EM": 0.79, "EM_percent": 79.0, "RSR": 0.7314, "RSR_percent": 73.14, "FRR": 0.0149, "FRR_percent": 1.49, "EM_count": "9497/12021", "RSR_count": "6386/8731", "FRR_count": "179/12021"},
+      "multi_action": {"Parent_EM": 0.4983, "Parent_EM_percent": 49.83, "Action_F1": 0.5515, "Parent_EM_count": "1196/2400"}
+    },
+    {
+      "variant": "w/o Execution Instance Modeling",
+      "module": "clear payload observations and entity observations; empty multi-action component observations",
+      "single_scene": {"EM": 0.5169, "EM_percent": 51.69, "RSR": 0.3349, "RSR_percent": 33.49, "FRR": 0.0, "FRR_percent": 0.0, "EM_count": "6214/12021", "RSR_count": "2924/8731", "FRR_count": "0/12021"},
+      "multi_action": {"Parent_EM": 0.3446, "Parent_EM_percent": 34.46, "Action_F1": 0.3446, "Parent_EM_count": "827/2400"}
+    },
+    {
+      "variant": "w/o Runtime Context",
+      "module": "strip environmental observations: illuminance, motion, window, door, occupancy, and quiet-hours evidence",
+      "single_scene": {"EM": 0.5504, "EM_percent": 55.04, "RSR": 0.4014, "RSR_percent": 40.14, "FRR": 0.0149, "FRR_percent": 1.49, "EM_count": "6616/12021", "RSR_count": "3505/8731", "FRR_count": "179/12021"},
+      "multi_action": {"Parent_EM": 0.2242, "Parent_EM_percent": 22.42, "Action_F1": 0.2242, "Parent_EM_count": "538/2400"}
+    },
+    {
+      "variant": "w/o Contract Constraints",
+      "module": "clear declared services, candidates, triggers, conditions, specifications, bindings, and multi-action contract ownership",
+      "single_scene": {"EM": 0.4891, "EM_percent": 48.91, "RSR": 0.2965, "RSR_percent": 29.65, "FRR": 0.0, "FRR_percent": 0.0, "EM_count": "5879/12021", "RSR_count": "2589/8731", "FRR_count": "0/12021"},
+      "multi_action": {"Parent_EM": 0.3654, "Parent_EM_percent": 36.54, "Action_F1": 0.3654}
+    },
+    {
+      "variant": "w/o Behavioral Assessment",
+      "module": "skip Remove, and skip the multi-action verifier",
+      "single_scene": {"EM": 0.5223, "EM_percent": 52.23, "RSR": 0.3627, "RSR_percent": 36.27, "FRR": 0.0149, "FRR_percent": 1.49, "EM_count": "6278/12021", "RSR_count": "3167/8731", "FRR_count": "179/12021"},
+      "multi_action": {"Parent_EM": 0.3063, "Parent_EM_percent": 30.63, "Action_F1": 0.3642, "Parent_EM_count": "735/2400"}
+    },
+    {
+      "variant": "w/o Remove",
+      "module": "skip Remove; Modify, Recover, and the multi-action verifier stay on",
+      "single_scene": {"EM": 0.5223, "EM_percent": 52.23, "RSR": 0.3627, "RSR_percent": 36.27, "FRR": 0.0149, "FRR_percent": 1.49, "EM_count": "6278/12021", "RSR_count": "3167/8731", "FRR_count": "179/12021"},
+      "multi_action": {"Parent_EM": 0.375, "Parent_EM_percent": 37.5, "Action_F1": 0.4329, "Parent_EM_count": "900/2400"}
+    },
+    {
+      "variant": "w/o Modify",
+      "module": "skip Modify",
+      "single_scene": {"EM": 0.6429, "EM_percent": 64.29, "RSR": 0.5288, "RSR_percent": 52.88, "FRR": 0.0149, "FRR_percent": 1.49, "EM_count": "7728/12021", "RSR_count": "4617/8731", "FRR_count": "179/12021"},
+      "multi_action": {"Parent_EM": 0.3317, "Parent_EM_percent": 33.17, "Action_F1": 0.357, "Parent_EM_count": "796/2400"}
+    },
+    {
+      "variant": "w/o Recover",
+      "module": "skip Recover (Add) and the HVAC recover rewrite",
+      "single_scene": {"EM": 0.6742, "EM_percent": 67.42, "RSR": 0.5515, "RSR_percent": 55.15, "FRR": 0.0, "FRR_percent": 0.0, "EM_count": "8105/12021", "RSR_count": "4815/8731", "FRR_count": "0/12021"},
+      "multi_action": {"Parent_EM": 0.4725, "Parent_EM_percent": 47.25, "Action_F1": 0.4979, "Parent_EM_count": "1134/2400"}
+    },
+    {
+      "variant": "w/o Provenance-Aware Interaction",
+      "module": "single-scene is unchanged, so it is not reported; multi-action stops after independent component merge",
+      "single_scene": null,
+      "multi_action": {"Parent_EM": 0.3608, "Parent_EM_percent": 36.08, "Action_F1": 0.4511, "Parent_EM_count": "866/2400"}
+    }
+  ]
+}
