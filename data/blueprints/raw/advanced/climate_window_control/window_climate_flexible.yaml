@@ -1,0 +1,122 @@
+blueprint:
+  name: Window Open - Climate Off/On (Flexible Notification)
+  description: |
+    Automatically turns off a climate device when a window sensor is opened, and returns
+    it to 'auto' mode when the window is closed. Notification handling is provided by the user.
+  domain: automation
+  source_url: https://gist.github.com/salimkayabasi/f387083bf2f07a12cdf39da9f8e30dc0
+  input:
+    window_sensor:
+      name: Window/Door Sensor
+      description: The sensor that detects when the window is opened or closed.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: 
+            - window
+            - door
+            - opening
+            
+    climate_entity:
+      name: Climate Device
+      description: The thermostat, TRV, or AC unit to control in the corresponding room.
+      selector:
+        entity:
+          domain: climate
+            
+    open_delay_sec:
+      name: Delay before turning OFF climate (seconds)
+      description: How long the window must be open before the climate turns off.
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 300
+          mode: slider
+          step: 5
+          unit_of_measurement: seconds
+            
+    close_delay_sec:
+      name: Delay before turning ON climate (seconds)
+      description: How long the window must be closed before the climate returns to 'auto'.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 300
+          mode: slider
+          step: 5
+          unit_of_measurement: seconds
+
+    # --- INPUT: ACTIONS TO RUN WHEN CLIMATE IS PAUSED (User chooses notify service) ---
+    actions_on_open:
+      name: Actions to run when Window is Open and Climate is Paused
+      description: |
+        Call your preferred notification service (e.g., notify.telegram) here. 
+        Example template: "Heating paused because {{ state_attr(trigger.entity_id, 'friendly_name') }} has been open."
+      default: []
+      selector:
+        action:
+            
+    # --- INPUT: ACTIONS TO RUN WHEN CLIMATE IS RESUMED (User chooses notify service) ---
+    actions_on_close:
+      name: Actions to run when Window is Closed and Climate is Resumed
+      description: |
+        Call your preferred notification service (e.g., notify.telegram) here.
+        Example template: "Heating resumed because {{ state_attr(trigger.entity_id, 'friendly_name') }} is now closed."
+      default: []
+      selector:
+        action:
+
+trigger:
+  # --- Trigger 1: Window Opens (Climate Off) ---
+  - platform: state
+    entity_id: !input window_sensor
+    id: window_open 
+    to: "on"
+    for:
+      seconds: !input open_delay_sec
+      
+  # --- Trigger 2: Window Closes (Climate On) ---
+  - platform: state
+    entity_id: !input window_sensor
+    id: window_closed
+    to: "off"
+    for:
+      seconds: !input close_delay_sec
+
+action:
+  - choose:
+    # --- CHOICE 1: WINDOW OPENED (Turn Off Climate) ---
+    - conditions:
+        - condition: trigger
+          id: window_open
+      sequence:
+        # 1. Turn climate OFF
+        - service: climate.set_hvac_mode
+          target:
+            entity_id: !input climate_entity
+          data:
+            hvac_mode: 'off'
+            
+        # 2. Run user-defined actions (Notification)
+        - alias: "Run actions on window open"
+          sequence: !input actions_on_open
+            
+    # --- CHOICE 2: WINDOW CLOSED (Set Climate to Auto) ---
+    - conditions:
+        - condition: trigger
+          id: window_closed
+      sequence:
+        # 1. Set the heating mode back to AUTO
+        - service: climate.set_hvac_mode
+          target:
+            entity_id: !input climate_entity
+          data:
+            hvac_mode: 'auto'
+        
+        # 2. Run user-defined actions (Notification)
+        - alias: "Run actions on window closed"
+          sequence: !input actions_on_close
+
+mode: single

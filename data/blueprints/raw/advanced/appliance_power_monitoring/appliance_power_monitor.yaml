@@ -1,0 +1,109 @@
+blueprint:
+  name: Appliance Power Monitor
+  description: Monitors the activity of a home appliance based on the power (W) it consumes and triggers actions based on start, running, and stop events. You can use the variables {{ elapsed_time }}, {{ energy_used }}, and {{ event_type }} in all the steps (start, running, and stop).
+  domain: automation
+  input:
+    power_entity:
+      name: Power Entity
+      description: Entity representing the power consumption of the appliance.
+      selector:
+        entity:
+          domain: sensor
+    energy_entity:
+      name: Energy Entity
+      description: Entity representing the energy consumption of the appliance.
+      selector:
+        entity:
+          domain: sensor
+    start_threshold:
+      name: Starting Threshold
+      description: Power threshold above which we assume the appliance has started.
+      default: 1
+      selector:
+        number:
+          min: 0
+          max: 100000
+          unit_of_measurement: "W"
+    finish_threshold:
+      name: Finishing Threshold
+      description: Power threshold below which we assume the appliance has finished.
+      default: 1
+      selector:
+        number:
+          min: 0
+          max: 100000
+          unit_of_measurement: "W"
+    elapsed_time_energy_data:
+      name: Elapsed Time and Energy Data
+      description: Input text entity to store the elapsed time and energy data.
+      selector:
+        entity:
+          domain: input_text
+    on_start:
+      name: On Start
+      description: Actions to perform when the appliance starts.
+      default: []
+      selector:
+        action: {}
+    on_running:
+      name: On Running
+      description: Actions to perform when the appliance is running.
+      default: []
+      selector:
+        action: {}
+    on_stop:
+      name: On Stop
+      description: Actions to perform when the appliance stops.
+      default: []
+      selector:
+        action: {}
+
+trigger:
+  platform: state
+  entity_id: !input 'power_entity'
+
+variables:
+  power: "{{ trigger.to_state.state | float }}"
+  start_threshold: !input start_threshold
+  finish_threshold: !input finish_threshold
+  elapsed_time_energy_data: !input 'elapsed_time_energy_data'
+  energy_entity: !input 'energy_entity'
+
+action:
+  - variables:
+      last_event_type: "{{ (states(elapsed_time_energy_data) | from_json).last_event_type if states(elapsed_time_energy_data) not in ['', 'unknown', 'unavailable'] else 'stop' }}"
+      event_type: >
+        {% if power > start_threshold and last_event_type == 'stop' %}
+          start
+        {% elif power > finish_threshold %}
+          running
+        {% elif power < finish_threshold and last_event_type != 'stop' %}
+          stop
+        {% else %}
+          {{ last_event_type }}
+        {% endif %}
+  - service: input_text.set_value
+    target:
+      entity_id: !input 'elapsed_time_energy_data'
+    data:
+      value: >
+        {% set current_energy = states(energy_entity) | float %}
+        {% set initial_energy = (states(elapsed_time_energy_data) | from_json).initial_energy | float if event_type != 'start' else current_energy %}
+        {% set start_time = (states(elapsed_time_energy_data) | from_json).start_time | float if event_type != 'start' else as_timestamp(now()) %}
+        {% if event_type == 'start' %}
+          {"elapsed_time": 0, "energy_used": 0, "initial_energy": "{{ current_energy }}", "last_event_type": "{{ event_type }}", "start_time": "{{ start_time }}"}
+        {% elif event_type == 'running' %}
+          {"elapsed_time": {{ (as_timestamp(now()) - start_time) | int }}, "energy_used": {{ (current_energy - initial_energy) | round(4) }}, "initial_energy": "{{ initial_energy }}", "last_event_type": "{{ event_type }}", "start_time": "{{ start_time }}"}
+        {% elif event_type == 'stop' %}
+          {"elapsed_time": {{ (as_timestamp(now()) - start_time) | int }}, "energy_used": {{ (current_energy - initial_energy) | round(4) }}, "initial_energy": "{{ initial_energy }}", "last_event_type": "{{ event_type }}", "start_time": "{{ start_time }}"}
+        {% endif %}
+  - variables:
+      elapsed_time: "{{ ((states(elapsed_time_energy_data) | from_json).elapsed_time) | int }}"
+      energy_used: "{{ ((states(elapsed_time_energy_data) | from_json).energy_used) | float }}"
+  - choose:
+      - conditions: "{{ event_type == 'start' }}"
+        sequence: !input 'on_start'
+      - conditions: "{{ event_type == 'running' }}"
+        sequence: !input 'on_running'
+      - conditions: "{{ event_type == 'stop' }}"
+        sequence: !input 'on_stop'

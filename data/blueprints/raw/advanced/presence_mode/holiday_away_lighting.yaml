@@ -1,0 +1,3520 @@
+blueprint:
+  name: Holiday & Away Lighting
+  description: >
+    # ✈️ Holiday & Away Lighting
+
+    **Version: 1.4**
+
+
+    Make your home glow, no matter where you go! 🚗 💨
+
+
+    **If you like my blueprints, and would like to show your support or just say thank you?** [Click Here](https://www.paypal.com/donate/?hosted_button_id=WAZS3QSDTPGA8) 🙂
+
+
+    <details>
+    <summary><b>The Automation Process:</b> 👈</summary>
+
+
+    This automation allows you to control lights or other entities based on various triggers, with customizable Behaviour for turning them ON and OFF. Here's how it works step by step:
+
+      - **Automation Activation:**
+        - **Entity-based control:** If you've selected an entity for automation control, the automation will be activated when the entity is turned ON. If the entity is turned OFF, the automation will be disabled.
+        - **Date Range Control:** The automation can be enabled or disabled based on a defined start and end date.
+        - **Device Tracker - Zone:** The automation will only activate when no tracked devices are in the selected zone.
+        - **Device Tracker - Zone + People:** The automation will only activate when no selected people are in the chosen zone.
+
+      - **Trigger Conditions:**
+        - You can set up a variety of triggers for turning the lights ON:
+          1. **Time-based trigger** - Lights turn ON at a specific time.
+          2. **Sun Elevation** - Lights turn ON when the sun reaches a certain angle.
+          3. **Ambient Light Level** - Lights turn ON when the ambient light level falls below a set threshold.
+          4. **Entity State (ON)** - Lights turn ON when a selected entity is turned ON.
+          5. **Entity State (OFF)** - Lights turn ON when a selected entity is turned OFF, creating a sequence effect across multiple automations.
+
+      - **Lights ON Behaviour:**
+        - **Order of Lights Turning ON:** Lights can turn ON in sequence, reverse order, shuffled, or at the same time, depending on your preference.
+        - **Staggered ON Behaviour:** If you've selected sequence, reverse order, or shuffled, the lights can be staggered with a random delay to create a more natural effect.
+        - **Lights:** For selected light entities, you can adjust brightness, colour temperature, colour, and transition time.
+
+      - **Lights ON Duration:**
+        - **Duration Method:** You can choose how long the lights stay ON before turning OFF.
+          1. **Minimum / Maximum ON Time:** Lights stay ON for a random duration between the set minimum and maximum ON time.
+          2. **Earliest and Latest Time Range:** Lights turn OFF at a random time within the defined earliest and latest OFF time range.
+          3. **Entity State - ON**: Lights stay ON for a random duration after an entity is turned ON before they turn OFF.
+          4. **Entity State - OFF**: Lights stay ON for a random duration after an entity is turned OFF before they turn OFF.
+          5. **Random Activity Window**: Lights will turn ON and OFF multiple times at random intervals within the defined duration and cycle settings.
+
+      - **Lights OFF Behaviour:**
+
+        - Just like the ON behaviour, you can define how lights will turn OFF:
+          - **Order of Lights Turning OFF:** You can turn them OFF in sequence, reverse order, shuffled, or all at the same time.
+          - **Staggered OFF Behaviour:** If sequence, reverse order, or shuffled is selected, lights will turn OFF with a random delay between each light.
+          - **Lights:** For selected light entities, you can adjust transition time.
+
+      - **Weekday Control (Optional):**
+
+        - You can specify that the automation only runs on certain weekdays, offering flexibility to limit the automation to weekdays or weekends.
+
+      - **Global Conditions (Optional):**
+
+        - You can apply global conditions that affect the automation's behaviour, ensuring it only runs under specific circumstances.
+    </details>
+
+
+    Need help?
+
+    - FAQ: [Click Here](https://community.home-assistant.io/t/871550/2)
+
+    - Community Support Including Updates: [Click Here](https://community.home-assistant.io/t/871550)
+
+
+    Required = *
+  domain: automation
+  input:
+    automation_control:
+      name: "Automation Control"
+      icon: mdi:auto-mode
+      collapsed: true
+      input:
+        automation_control:
+          name: Automation Control (Optional)
+          description: >
+            This optional control allows you to activate the automation based on an entity's ON state, a specified date range, or the presence of devices and people in a zone.
+
+            - **Entity State** - Use an entity to activate the automation.
+            This could be a simple toggle helper in a dashboard to easily turn your holiday lighting automations ON or OFF.
+
+            - **Start & End Date** - Set a date range to determine when this automation is active.
+
+            - **Device Tracker - Zone** - This tracks your devices and will only trigger when no devices are present in the selected zone.
+
+            - **Device Tracker - Zone + People** - This tracks the selected people and will only trigger when none of the selected people are present in the chosen zone.
+          default: disable_automation_control
+          selector:
+            select:
+              options:
+                - label: Entity State
+                  value: "enable_entity_state"
+                - label: Start & End Date
+                  value: "enable_start_end_date"
+                - label: Device Tracker - Zone
+                  value: "enable_zone"
+                - label: Device Tracker - Zone + People
+                  value: "enable_people"
+                - label: Disable Automation Control
+                  value: "disable_automation_control"
+        automation_control_entity:
+          name: Entity State
+          description: >
+            Select the entity to use for enabling or disabling the automation.
+            When the entity is ON, the automation is active; when it is OFF, the automation is inactive.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - input_boolean
+        automation_control_start_date:
+          name: Start Date
+          description: >
+            The date when the automation should start running.
+          default: 2025-01-01 00:00:00
+          selector:
+            datetime:
+        automation_control_end_date:
+          name: End Date
+          description: >
+              The date when the automation should stop running.
+          default: 2025-01-01 00:00:00
+          selector:
+            datetime:
+        automation_control_zone:
+          name: Device Tracker - Zone
+          description: >
+            Select the zone that will be used to track the presence of devices and/or people.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain: zone
+        automation_control_people:
+          name: Device Tracker - People
+          description: >
+            Choose the people you want to track within the selected zone. 
+
+
+            **Note:** A zone must be selected above for this option to function.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                domain:
+                  - person
+    trigger_settings:
+      name: "Trigger Settings"
+      icon: mdi:cog-play-outline
+      collapsed: true
+      input:
+        trigger_selection:
+          name: Trigger Type
+          description: >
+            Select how the lighting should be triggered ON:
+
+
+            - **Time** - Turn the lights ON at a specific time.
+
+            - **Sun Elevation** - Turn the lights ON when the sun elevation falls below the 'Sun Elevation Falling' setpoint.
+
+            - **Ambient Lighting** - Turn the lights ON when the ambient light sensor falls below the 'Ambient Light Lux Threshold'.
+
+            - **Entity State - ON** - Turn the lights ON when a selected entity turns ON.
+
+            - **Entity State - OFF** - Turn the lights ON when a selected entity turns OFF.
+
+
+            The settings to each option are provided below.
+          default: time_on
+          selector:
+            select:
+              options:
+                - label: Time
+                  value: "time_on"
+                - label: Sun Elevation
+                  value: "sun_elevation"
+                - label: Ambient Light
+                  value: "ambient_light"
+                - label: Entity State - ON
+                  value: "entity_state_on"
+                - label: Entity State - OFF
+                  value: "entity_state_off"
+        on_time:
+          name: Turn ON Time
+          description: >
+            The time when the lights should turn ON.
+          default: 00:00:00
+          selector:
+            time:
+        on_time_delay:
+          name: Turn ON Time Delay
+          description: >
+            When the time passes and triggers the automation, a random delay (up to the set number of minutes) is added before the lights activate.
+
+
+            This helps the lighting feel more natural and prevents the lights from turning ON at the exact same time every day, avoiding the “time-clock” effect.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: minutes
+              mode: slider
+        sun_elevation:
+          name: Sun Elevation Falling
+          description: >
+            The sun elevation falling refers to the angle between the sun and the horizon when the sun is setting.
+
+            - **Negative values** indicate the sun is below the horizon (e.g., -1.5 for dusk).
+
+            - **Positive values** indicate the sun is above the horizon.
+          default: -1.5
+          selector:
+            number:
+              min: -10
+              max: 5
+              step: 0.5
+              unit_of_measurement: degrees
+        ambient_light_sensor:
+          name: Ambient Light Sensor
+          description: >
+            Select the ambient light sensor used to determine lighting conditions.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain: sensor
+                device_class: illuminance
+        ambient_light_value:
+          name: Ambient Light Lux Threshold
+          description: >
+            Set the lux level at which the lights will turn ON.
+            **Guide:** 20 lux corresponds to dusk conditions.
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 500
+              step: 10
+              unit_of_measurement: lux
+        entity_state_on:
+          name: Entity State - ON
+          description: >
+            Select an entity that, when turned ON, will trigger the lighting.
+          default: []
+          selector:
+            entity:
+        entity_state_on_time_delay:
+          name: Entity State - ON - Time Delay
+          description: >
+            After the entity turns ON, a random delay (up to the set number of minutes) is applied before the lights turn ON.
+
+
+            This helps the lighting feel more natural and prevents the lights from turning ON at the exact same time every day, avoiding the “time-clock” effect.
+          default: 15
+          selector:
+            number:
+              min: 0
+              max: 30
+              unit_of_measurement: minutes
+              mode: slider
+        entity_state_off:
+          name: Entity State - OFF
+          description: >
+            Select an entity that, when turned OFF, will trigger the lighting.
+            This is useful when using multiple automations to create a natural lighting sequence.
+
+
+            For example, turning OFF your family room lights could trigger your hallway lights to turn ON, followed by your bedroom lights, making it appear as if someone is moving through the house.
+          default: []
+          selector:
+            entity:
+        entity_state_off_time_delay:
+          name: Entity State - OFF - Time Delay
+          description: >
+            After the entity turns OFF, a random delay (up to the set number of seconds) is applied before the next lights turn ON.
+
+
+            This creates a smoother, more natural transition between rooms and prevents the lighting sequence from feeling mechanical.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: seconds
+              mode: slider
+    automation_settings:
+      name: "Automation Settings"
+      icon: mdi:head-lightbulb-outline
+      collapsed: true
+      input:
+        entity_order_on:
+          name: Lights ON Order
+          description: >
+            Choose the order in which the lights will turn ON.
+
+
+            - **In Sequence** - Lights will turn ON in order (Light 1, 2, 3, 4, etc.).
+
+            - **Reverse Order** - Lights will turn ON in reverse order (Light 10, 9, 8, 7, etc.).
+
+            - **Shuffled** - Lights will turn ON in a random order each time.
+
+            - **At the Same Time** - Lights will turn ON together at the same time.
+          default: entities_on_same_time
+          selector:
+            select:
+              options:
+                - label: In Sequence
+                  value: "entities_on_in_sequence"
+                - label: Reverse Order
+                  value: "entities_on_in_reverse_order"
+                - label: Shuffled
+                  value: "entities_on_shuffled"
+                - label: At the Same Time
+                  value: "entities_on_same_time"
+        random_on_delay:
+          name: Random ON Delay
+          description: >
+            If you selected 'In Sequence,' 'Reverse Order,' or 'Shuffled' in 'Lights ON Order' above, set the maximum random delay (in seconds) to stagger the lights turning ON.
+
+
+            **Example:**
+
+            - **In Sequence, Reverse Order & Shuffled Only**: When the automation is triggered, the first light will turn ON immediately.
+            Then, a random delay (within the 'Random ON Delay') will be applied before the next light turns ON.
+            This continues for each subsequent light, creating a staggered effect with random delays between each light turning ON, as if you were manually turning the lights ON one by one.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 300
+              unit_of_measurement: seconds
+              mode: slider
+        time_off_selection:
+          name: Lights ON Duration Method
+          description: >
+            Choose the method for determining how long the lights should stay ON before turning OFF:
+
+
+            1. **Minimum / Maximum ON Time** - Lights will start turning OFF at a random time between the set minimum and maximum ON time.
+
+
+            2. **Earliest and Latest Time Range** - Lights will start turning OFF at a random time within the defined earliest and latest OFF time range.
+
+
+            3. **Entity State - ON** - Lights will start turning OFF at a random time delay when a selected entity turns ON.
+
+
+            4. **Entity State - OFF** - Lights will start turning OFF at a random time delay when a selected entity turns OFF.
+
+
+            5. **Random Activity Window** - Lights will turn ON and OFF multiple times at random intervals within the defined duration and cycle settings.
+
+
+            The settings to each method are provided below.
+          default: min_max_on_time
+          selector:
+            select:
+              options:
+                - label: Use Minimum / Maximum ON Time
+                  value: "min_max_on_time"
+                - label: Use Earliest and Latest Time Range
+                  value: "earliest_latest_time_range"
+                - label: Entity State - ON
+                  value: "entity_on_state"
+                - label: Entity State - OFF
+                  value: "entity_off_state"
+                - label: Random Activity Window
+                  value: "random_activity_window"
+        min_on_time:
+          name: Minimum ON Time
+          description: >
+            **Method 1** - Once all the lights are on, set the minimum time they should stay ON before turning OFF.
+          default: 
+            hours: 0
+            minutes: 5
+            seconds: 0
+          selector:
+            duration:
+        max_on_time:
+          name: Maximum ON Time
+          description: >
+            **Method 1** - Once all the lights are on, set the maximum time the lights should stay ON before turning OFF.
+          default: 
+            hours: 0
+            minutes: 10
+            seconds: 0
+          selector:
+            duration:
+        start_time_range:
+          name: Earliest OFF Time
+          description: >
+            **Method 2** - The earliest time the automation can start turning the lights OFF.
+
+
+            **Note:** Ensure that your lights will be ON based on your trigger selection and that they are not scheduled to turn ON after this time.
+          default: "22:30:00"
+          selector:
+            time:
+        end_time_range:
+          name: Latest OFF Time
+          description: >
+            **Method 2** - The latest time the automation can start turning the lights OFF.
+
+
+            **Note:** Ensure that your lights will be ON based on your trigger selection and that they are not scheduled to turn ON after this time.
+          default: "23:00:00"
+          selector:
+            time:
+        entity_on_state:
+          name: Entity State - ON
+          description: >
+            **Method 3** - Select an entity that, when turned ON, will initiate turning the lights OFF.
+          default: []
+          selector:
+            entity:
+        entity_on_state_time_delay:
+          name: Entity State - ON - Time Delay
+          description: >
+            **Method 3** - Once the above entity turns ON, introduce a random delay (up to the set number of seconds) before turning the lights OFF.
+            This prevents the lights from turning OFF immediately when the entity turns ON, creating a more natural effect.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: seconds
+              mode: slider
+        entity_off_state:
+          name: Entity State - OFF
+          description: >
+            **Method 4** - Select an entity that, when turned OFF, will initiate turning the lights OFF.
+          default: []
+          selector:
+            entity:
+        entity_off_state_time_delay:
+          name: Entity State - OFF - Time Delay
+          description: >
+            **Method 4** - Once the above entity turns OFF, introduce a random delay (up to the set number of seconds) before turning the lights OFF.
+            This prevents the lights from turning OFF immediately when the entity turns OFF, creating a more natural effect.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: seconds
+              mode: slider
+        activity_window_duration:
+          name: Activity Window - Duration
+          description: >
+            **Method 5** - The total time period during which random lighting activity can occur.
+
+
+            This defines the full activity window used to distribute all lighting cycles after the automation starts.
+
+
+            **Example:**
+
+            * Simulate normal overnight movement between bedtime and morning.
+
+            * Simulate presence in the home while occupants are asleep.
+
+            * Longer durations create larger gaps between random lighting events.
+
+
+            ⚠️ Recommended range: 8 to 10 hours for realistic overnight simulation.
+
+
+            Although not required for most setups, you can fully validate your configuration using the formula below:
+            This confirms your settings fit within the Activity Window
+            (all calculations are based on seconds).
+
+
+            (Cycle Count x Maximum ON Time) + ((Cycle Count - 1) x Maximum OFF Time) ≤ Duration
+          default:
+            hours: 9
+            minutes: 0
+            seconds: 0
+          selector:
+            duration:
+        activity_cycle_count:
+          name: Activity Window - Number Of Cycles
+          description: >
+            **Method 5** - The total number of light activation cycles during the activity window.
+
+
+            The first cycle occurs when the automation is triggered (bedtime start), with the remaining cycles distributed randomly throughout the activity window.
+
+
+            ⚠️ A minimum of 2 cycles is recommended.
+            Using only 1 cycle will result in no additional random activity, as the first cycle occurs immediately when the automation starts.
+            In this case, another **Lights ON Duration Method** would be more suitable.
+
+
+            **Example:**
+
+            * 2 cycles = bedtime + one additional night-time movement
+
+            * 3-4 cycles = typical household night activity (bedtime + multiple movements)
+
+            * 5 cycles = higher activity levels or multiple occupants
+          default: 3
+          selector:
+            number:
+              min: 2
+              max: 5
+              mode: slider
+        activity_min_on_time:
+          name: Activity Window - Minimum ON Time
+          description: >
+            **Method 5** - The minimum amount of time the lights will stay ON during each cycle.
+
+
+            **Example:**
+
+            * Quick bathroom trip (toilet visit and return to bed)
+
+            * Brief hallway or kitchen movements
+          default:
+            hours: 0
+            minutes: 0
+            seconds: 30
+          selector:
+            duration:
+        activity_max_on_time:
+          name: Activity Window - Maximum ON Time
+          description: >
+            **Method 5** - The maximum amount of time the lights will stay ON during each cycle.
+
+
+            **Example:**
+
+            * Slower night movement through the house (e.g. toilet + drink of water)
+
+            * Brief extended activity before returning to bed
+          default:
+            hours: 0
+            minutes: 4
+            seconds: 0
+          selector:
+            duration:
+        activity_min_off_time:
+          name: Activity Window - Minimum OFF Time
+          description: >
+            **Method 5** - The minimum amount of time the lights will stay OFF between light activations.
+
+
+            **Example:**
+
+            * Short sleep period between wake-ups
+
+            * Light sleep before another brief movement (e.g. toilet trip)
+          default:
+            hours: 3
+            minutes: 0
+            seconds: 0
+          selector:
+            duration:
+        activity_max_off_time:
+          name: Activity Window - Maximum OFF Time
+          description: >
+            **Method 5** - The maximum amount of time the lights will stay OFF between light activations.
+
+
+            **Example:**
+
+            * Deep sleep period with no interruptions
+
+            * Long rest period before any further movement occurs
+          default:
+            hours: 4
+            minutes: 20
+            seconds: 0
+          selector:
+            duration:
+        entity_order_off:
+          name: Lights OFF Order
+          description: >
+            Choose the order in which the lights will turn OFF.
+
+
+            - **In Sequence** - Lights will turn OFF in order (Light 1, 2, 3, 4, etc.).
+
+            - **Reverse Order** - Lights will turn OFF in reverse order (Light 10, 9, 8, 7, etc.).
+            
+            - **Shuffled** - Lights will turn OFF in a random order each time.
+
+            - **At the Same Time** - Lights will turn OFF together at the same time.
+          default: entities_off_same_time
+          selector:
+            select:
+              options:
+                - label: In Sequence
+                  value: "entities_off_in_sequence"
+                - label: Reverse Order
+                  value: "entities_off_in_reverse_order"
+                - label: Shuffled
+                  value: "entities_off_shuffled"
+                - label: At the Same Time
+                  value: "entities_off_same_time"
+        random_off_delay:
+          name: Random OFF Delay
+          description: >
+            If you selected 'In Sequence,' 'Reverse Order,' or 'Shuffled' in 'Lights OFF Order' above, set the maximum random delay (in seconds) to stagger the lights turning OFF.
+
+
+            **Example:**
+
+            - **In Sequence, Reverse Order & Shuffled Only**: When the automation has met its 'Lights ON Duration Method,' the first light will turn OFF immediately.
+            Then, a random delay (within the 'Random OFF Delay') is applied before the next light turns OFF.
+            This continues for each subsequent light, creating a staggered effect with random delays between each light turning OFF, simulating the effect of manually turning off the lights one by one.
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 300
+              unit_of_measurement: seconds
+              mode: slider
+    light_1:
+      name: "Light 1 *"
+      icon: mdi:lightbulb-outline
+      collapsed: true
+      input:
+        entity_1:
+          name: Light 1 *
+          description: >
+            First light, switch or toggle helper.
+
+
+            **Applies to each light input:**
+            
+            If you're using my💡[Sensor Light Blueprint](https://community.home-assistant.io/t/481048) to control your lights, it's recommended to use a toggle helper here, as well as in the bypass option 1 of your Sensor Light automations.
+            This setup will allow you to control all your lights, switches, scenes, or scripts via the Sensor Light Blueprint, enhancing the user experience.
+
+
+            Even though only lights, switches, and toggle helpers are displayed in the selection, the automation can turn ON and OFF any entity.
+            If you're unable to select your entity (e.g., TV, media player, etc.), simply copy and paste its entity ID into the input field.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_1_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_1_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_1_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_1_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_1_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_1_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_1_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_1_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_1_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_2:
+      name: "Light 2"
+      icon: mdi:lightbulb-multiple-outline
+      collapsed: true
+      input:
+        entity_2:
+          name: Light 2
+          description: >
+            Second light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_2_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_2_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_2_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_2_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_2_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_2_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_2_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_2_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_2_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_3:
+      name: "Light 3"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_3:
+          name: Light 3
+          description: >
+            Third light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_3_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_3_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_3_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_3_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_3_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_3_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_3_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_3_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_3_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_4:
+      name: "Light 4"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_4:
+          name: Light 4
+          description: >
+            Fourth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_4_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_4_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_4_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_4_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_4_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_4_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_4_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_4_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_4_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_5:
+      name: "Light 5"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_5:
+          name: Light 5
+          description: >
+            Fifth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_5_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_5_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_5_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_5_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_5_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_5_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_5_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_5_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_5_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_6:
+      name: "Light 6"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_6:
+          name: Light 6
+          description: >
+            Sixth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_6_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_6_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_6_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_6_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_6_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_6_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_6_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_6_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_6_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_7:
+      name: "Light 7"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_7:
+          name: Light 7
+          description: >
+            Seventh light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_7_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_7_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_7_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_7_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_7_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_7_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_7_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_7_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_7_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_8:
+      name: "Light 8"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_8:
+          name: Light 8
+          description: >
+            Eighth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_8_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_8_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_8_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_8_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_8_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_8_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_8_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_8_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_8_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_9:
+      name: "Light 9"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_9:
+          name: Light 9
+          description: >
+            Ninth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_9_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_9_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_9_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_9_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_9_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_9_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_9_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_9_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_9_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    light_10:
+      name: "Light 10"
+      icon: mdi:lightbulb-group-outline
+      collapsed: true
+      input:
+        entity_10:
+          name: Light 10
+          description: >
+            Tenth light, switch or toggle helper.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain:
+                  - light
+                  - switch
+                  - input_boolean
+        entity_10_include_light_control:
+          name: Light Control Options (Optional)
+          description: >
+            Select if you would like to use brightness or transition.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for brightness and transition are provided below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Use Brightness
+                  value: "use_brightness"
+                - label: Use Transition
+                  value: "use_transition"
+        entity_10_light_brightness:
+          name: Brightness
+          description: >
+            The brightness setting for the lights when they are turned ON.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              mode: slider
+              step: 1
+              unit_of_measurement: '%'
+        entity_10_light_transition_on:
+          name: Transition - ON
+          description: >
+            The transition setting for the lights when they are turned ON.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 5
+              mode: slider
+              step: 0.5
+              unit_of_measurement: seconds
+        entity_10_light_transition_off:
+          name: Transition - OFF
+          description: >
+            The transition setting for the lights when they are turned OFF.
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 30
+              mode: slider
+              step: 1
+              unit_of_measurement: seconds
+        entity_10_include_light_colour_control:
+          name: Light Colour Control Options (Optional)
+          description: >
+            Select if you would like to use colour temperature, RGB, RGBW or RGBWW colour.
+            These settings will only affect a 'light' entity that supports each selected option.
+            The settings for colour temperature, RGB, RGBW and RGBWW colour are provided below.
+          default: disable_colour_control
+          selector:
+            select:
+              options:
+                - label: Use Colour Temperature
+                  value: "use_colour_temperature"
+                - label: Use RGB Colour
+                  value: "use_rgb_colour"
+                - label: Use RGBW Colour
+                  value: "use_rgbw_colour"
+                - label: Use RGBWW Colour
+                  value: "use_rgbww_colour"
+                - label: Disable Colour Control
+                  value: "disable_colour_control"
+        entity_10_light_colour_temperature:
+          name: Colour Temperature
+          description: >
+            The colour temperature setting for the lights when they are turned ON.
+          default: 5000
+          selector:
+            number:
+              min: 2000
+              max: 8000
+              mode: slider
+              step: 100
+              unit_of_measurement: 'kelvin'
+        entity_10_light_rgb_colour:
+          name: RGB Colour
+          description: >
+            The RGB colour setting for the lights when they are turned ON.
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        entity_10_light_rgbw_colour:
+          name: RGBW Colour
+          description: >
+            The RGBW colour setting for the lights when they are turned ON.
+            Enter four integers between 0 and 255 to define the values for Red, Green, Blue, and White.
+          default: [255, 255, 255, 255]
+          selector:
+            object:
+        entity_10_light_rgbww_colour:
+          name: RGBWW Colour
+          description: >
+            The RGBWW colour setting for the lights when they are turned ON.
+            Enter five integers between 0 and 255 to define the values for Red, Green, Blue, Cold White and Warm White.
+          default: [255, 255, 255, 255, 255]
+          selector:
+            object:
+    weekdays:
+      name: "Weekdays"
+      icon: mdi:calendar-week
+      collapsed: true
+      input:
+        include_weekdays:
+          name: Use The Weekdays Option (Optional)
+          description: >
+            This option adds a condition to operate only on specified weekdays. It applies globally to all triggers.
+          default: weekday_disabled
+          selector:
+            select:
+              options:
+                - label: Enable the weekday option
+                  value: "weekday_enabled"
+                - label: Disable the weekday option
+                  value: "weekday_disabled"
+        weekday_options:
+          name: Weekdays
+          description: >
+            Select the days of the week on which you want the automation to run.
+          default:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+            - sat
+            - sun
+          selector:
+            select:
+              multiple: true
+              mode: list
+              options:
+                - label: Monday
+                  value: "mon"
+                - label: Tuesday
+                  value: "tue"
+                - label: Wednesday
+                  value: "wed"
+                - label: Thursday
+                  value: "thu"
+                - label: Friday
+                  value: "fri"
+                - label: Saturday
+                  value: "sat"
+                - label: Sunday
+                  value: "sun"
+    global_conditions_settings:
+        name: "Global Conditions"
+        icon: mdi:earth
+        collapsed: true
+        input:
+          global_conditions:
+            name: Global Conditions
+            description: >
+              Enter any global conditions you would like to apply to the automation.
+            default: []
+            selector:
+              condition:
+
+# It will restart the script.
+mode: restart
+max_exceeded: silent
+
+variables:
+  automation_control: !input automation_control
+  automation_control_entity: !input automation_control_entity
+  automation_control_start_date: !input automation_control_start_date
+  automation_control_end_date: !input automation_control_end_date
+  automation_control_zone: !input automation_control_zone
+  automation_control_people: !input automation_control_people
+  trigger_selection: !input trigger_selection
+  on_time: !input on_time
+  on_time_delay: !input on_time_delay
+  sun_elevation: !input sun_elevation
+  ambient_light_sensor: !input ambient_light_sensor
+  ambient_light_value: !input ambient_light_value
+  entity_state_on: !input entity_state_on
+  entity_state_on_time_delay: !input entity_state_on_time_delay
+  entity_state_off: !input entity_state_off
+  entity_state_off_time_delay: !input entity_state_off_time_delay
+  entity_order_on: !input entity_order_on
+  random_on_delay: !input random_on_delay
+  time_off_selection: !input time_off_selection
+  min_on_time: !input min_on_time
+  max_on_time: !input max_on_time
+  start_time_range: !input start_time_range
+  end_time_range: !input end_time_range
+  entity_on_state: !input entity_on_state
+  entity_on_state_time_delay: !input entity_on_state_time_delay
+  entity_off_state: !input entity_off_state
+  entity_off_state_time_delay: !input entity_off_state_time_delay
+  activity_window_duration: !input activity_window_duration
+  activity_cycle_count: !input activity_cycle_count
+  activity_min_on_time: !input activity_min_on_time
+  activity_max_on_time: !input activity_max_on_time
+  activity_min_off_time: !input activity_min_off_time
+  activity_max_off_time: !input activity_max_off_time
+  entity_order_off: !input entity_order_off
+  random_off_delay: !input random_off_delay
+  entity_1: !input entity_1
+  entity_1_include_light_control: !input entity_1_include_light_control
+  entity_1_light_brightness: !input entity_1_light_brightness
+  entity_1_light_transition_on: !input entity_1_light_transition_on
+  entity_1_light_transition_off: !input entity_1_light_transition_off
+  entity_1_include_light_colour_control: !input entity_1_include_light_colour_control
+  entity_1_light_colour_temperature: !input entity_1_light_colour_temperature
+  entity_1_light_rgb_colour: !input entity_1_light_rgb_colour
+  entity_1_light_rgbw_colour: !input entity_1_light_rgbw_colour
+  entity_1_light_rgbww_colour: !input entity_1_light_rgbww_colour
+  entity_2: !input entity_2
+  entity_2_include_light_control: !input entity_2_include_light_control
+  entity_2_light_brightness: !input entity_2_light_brightness
+  entity_2_light_transition_on: !input entity_2_light_transition_on
+  entity_2_light_transition_off: !input entity_2_light_transition_off
+  entity_2_include_light_colour_control: !input entity_2_include_light_colour_control
+  entity_2_light_colour_temperature: !input entity_2_light_colour_temperature
+  entity_2_light_rgb_colour: !input entity_2_light_rgb_colour
+  entity_2_light_rgbw_colour: !input entity_2_light_rgbw_colour
+  entity_2_light_rgbww_colour: !input entity_2_light_rgbww_colour
+  entity_3: !input entity_3
+  entity_3_include_light_control: !input entity_3_include_light_control
+  entity_3_light_brightness: !input entity_3_light_brightness
+  entity_3_light_transition_on: !input entity_3_light_transition_on
+  entity_3_light_transition_off: !input entity_3_light_transition_off
+  entity_3_include_light_colour_control: !input entity_3_include_light_colour_control
+  entity_3_light_colour_temperature: !input entity_3_light_colour_temperature
+  entity_3_light_rgb_colour: !input entity_3_light_rgb_colour
+  entity_3_light_rgbw_colour: !input entity_3_light_rgbw_colour
+  entity_3_light_rgbww_colour: !input entity_3_light_rgbww_colour
+  entity_4: !input entity_4
+  entity_4_include_light_control: !input entity_4_include_light_control
+  entity_4_light_brightness: !input entity_4_light_brightness
+  entity_4_light_transition_on: !input entity_4_light_transition_on
+  entity_4_light_transition_off: !input entity_4_light_transition_off
+  entity_4_include_light_colour_control: !input entity_4_include_light_colour_control
+  entity_4_light_colour_temperature: !input entity_4_light_colour_temperature
+  entity_4_light_rgb_colour: !input entity_4_light_rgb_colour
+  entity_4_light_rgbw_colour: !input entity_4_light_rgbw_colour
+  entity_4_light_rgbww_colour: !input entity_4_light_rgbww_colour
+  entity_5: !input entity_5
+  entity_5_include_light_control: !input entity_5_include_light_control
+  entity_5_light_brightness: !input entity_5_light_brightness
+  entity_5_light_transition_on: !input entity_5_light_transition_on
+  entity_5_light_transition_off: !input entity_5_light_transition_off
+  entity_5_include_light_colour_control: !input entity_5_include_light_colour_control
+  entity_5_light_colour_temperature: !input entity_5_light_colour_temperature
+  entity_5_light_rgb_colour: !input entity_5_light_rgb_colour
+  entity_5_light_rgbw_colour: !input entity_5_light_rgbw_colour
+  entity_5_light_rgbww_colour: !input entity_5_light_rgbww_colour
+  entity_6: !input entity_6
+  entity_6_include_light_control: !input entity_6_include_light_control
+  entity_6_light_brightness: !input entity_6_light_brightness
+  entity_6_light_transition_on: !input entity_6_light_transition_on
+  entity_6_light_transition_off: !input entity_6_light_transition_off
+  entity_6_include_light_colour_control: !input entity_6_include_light_colour_control
+  entity_6_light_colour_temperature: !input entity_6_light_colour_temperature
+  entity_6_light_rgb_colour: !input entity_6_light_rgb_colour
+  entity_6_light_rgbw_colour: !input entity_6_light_rgbw_colour
+  entity_6_light_rgbww_colour: !input entity_6_light_rgbww_colour
+  entity_7: !input entity_7
+  entity_7_include_light_control: !input entity_7_include_light_control
+  entity_7_light_brightness: !input entity_7_light_brightness
+  entity_7_light_transition_on: !input entity_7_light_transition_on
+  entity_7_light_transition_off: !input entity_7_light_transition_off
+  entity_7_include_light_colour_control: !input entity_7_include_light_colour_control
+  entity_7_light_colour_temperature: !input entity_7_light_colour_temperature
+  entity_7_light_rgb_colour: !input entity_7_light_rgb_colour
+  entity_7_light_rgbw_colour: !input entity_7_light_rgbw_colour
+  entity_7_light_rgbww_colour: !input entity_7_light_rgbww_colour
+  entity_8: !input entity_8
+  entity_8_include_light_control: !input entity_8_include_light_control
+  entity_8_light_brightness: !input entity_8_light_brightness
+  entity_8_light_transition_on: !input entity_8_light_transition_on
+  entity_8_light_transition_off: !input entity_8_light_transition_off
+  entity_8_include_light_colour_control: !input entity_8_include_light_colour_control
+  entity_8_light_colour_temperature: !input entity_8_light_colour_temperature
+  entity_8_light_rgb_colour: !input entity_8_light_rgb_colour
+  entity_8_light_rgbw_colour: !input entity_8_light_rgbw_colour
+  entity_8_light_rgbww_colour: !input entity_8_light_rgbww_colour
+  entity_9: !input entity_9
+  entity_9_include_light_control: !input entity_9_include_light_control
+  entity_9_light_brightness: !input entity_9_light_brightness
+  entity_9_light_transition_on: !input entity_9_light_transition_on
+  entity_9_light_transition_off: !input entity_9_light_transition_off
+  entity_9_include_light_colour_control: !input entity_9_include_light_colour_control
+  entity_9_light_colour_temperature: !input entity_9_light_colour_temperature
+  entity_9_light_rgb_colour: !input entity_9_light_rgb_colour
+  entity_9_light_rgbw_colour: !input entity_9_light_rgbw_colour
+  entity_9_light_rgbww_colour: !input entity_9_light_rgbww_colour
+  entity_10: !input entity_10
+  entity_10_include_light_control: !input entity_10_include_light_control
+  entity_10_light_brightness: !input entity_10_light_brightness
+  entity_10_light_transition_on: !input entity_10_light_transition_on
+  entity_10_light_transition_off: !input entity_10_light_transition_off
+  entity_10_include_light_colour_control: !input entity_10_include_light_colour_control
+  entity_10_light_colour_temperature: !input entity_10_light_colour_temperature
+  entity_10_light_rgb_colour: !input entity_10_light_rgb_colour
+  entity_10_light_rgbw_colour: !input entity_10_light_rgbw_colour
+  entity_10_light_rgbww_colour: !input entity_10_light_rgbww_colour
+  include_weekdays: !input include_weekdays
+  weekday_options: !input weekday_options
+  global_conditions: !input global_conditions
+
+  entities: >
+    {% set entities = [] %}
+    {% if entity_1 %}
+      {% set entity_domain = entity_1.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_1_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_1_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_1_include_light_control %}
+          {% set d = dict(d, transition=entity_1_light_transition_on) %}
+        {% endif %}
+        {% if entity_1_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_1_light_colour_temperature) %}
+        {% elif entity_1_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_1_light_rgb_colour) %}
+        {% elif entity_1_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_1_light_rgbw_colour) %}
+        {% elif entity_1_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_1_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_1, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_1}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_2 %}
+      {% set entity_domain = entity_2.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_2_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_2_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_2_include_light_control %}
+          {% set d = dict(d, transition=entity_2_light_transition_on) %}
+        {% endif %}
+        {% if entity_2_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_2_light_colour_temperature) %}
+        {% elif entity_2_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_2_light_rgb_colour) %}
+        {% elif entity_2_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_2_light_rgbw_colour) %}
+        {% elif entity_2_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_2_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_2, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_2}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_3 %}
+      {% set entity_domain = entity_3.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_3_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_3_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_3_include_light_control %}
+          {% set d = dict(d, transition=entity_3_light_transition_on) %}
+        {% endif %}
+        {% if entity_3_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_3_light_colour_temperature) %}
+        {% elif entity_3_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_3_light_rgb_colour) %}
+        {% elif entity_3_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_3_light_rgbw_colour) %}
+        {% elif entity_3_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_3_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_3, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_3}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_4 %}
+      {% set entity_domain = entity_4.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_4_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_4_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_4_include_light_control %}
+          {% set d = dict(d, transition=entity_4_light_transition_on) %}
+        {% endif %}
+        {% if entity_4_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_4_light_colour_temperature) %}
+        {% elif entity_4_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_4_light_rgb_colour) %}
+        {% elif entity_4_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_4_light_rgbw_colour) %}
+        {% elif entity_4_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_4_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_4, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_4}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_5 %}
+      {% set entity_domain = entity_5.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_5_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_5_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_5_include_light_control %}
+          {% set d = dict(d, transition=entity_5_light_transition_on) %}
+        {% endif %}
+        {% if entity_5_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_5_light_colour_temperature) %}
+        {% elif entity_5_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_5_light_rgb_colour) %}
+        {% elif entity_5_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_5_light_rgbw_colour) %}
+        {% elif entity_5_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_5_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_5, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_5}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_6 %}
+      {% set entity_domain = entity_6.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_6_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_6_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_6_include_light_control %}
+          {% set d = dict(d, transition=entity_6_light_transition_on) %}
+        {% endif %}
+        {% if entity_6_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_6_light_colour_temperature) %}
+        {% elif entity_6_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_6_light_rgb_colour) %}
+        {% elif entity_6_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_6_light_rgbw_colour) %}
+        {% elif entity_6_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_6_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_6, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_6}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_7 %}
+      {% set entity_domain = entity_7.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_7_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_7_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_7_include_light_control %}
+          {% set d = dict(d, transition=entity_7_light_transition_on) %}
+        {% endif %}
+        {% if entity_7_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_7_light_colour_temperature) %}
+        {% elif entity_7_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_7_light_rgb_colour) %}
+        {% elif entity_7_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_7_light_rgbw_colour) %}
+        {% elif entity_7_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_7_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_7, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_7}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_8 %}
+      {% set entity_domain = entity_8.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_8_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_8_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_8_include_light_control %}
+          {% set d = dict(d, transition=entity_8_light_transition_on) %}
+        {% endif %}
+        {% if entity_8_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_8_light_colour_temperature) %}
+        {% elif entity_8_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_8_light_rgb_colour) %}
+        {% elif entity_8_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_8_light_rgbw_colour) %}
+        {% elif entity_8_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_8_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_8, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_8}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_9 %}
+      {% set entity_domain = entity_9.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_9_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_9_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_9_include_light_control %}
+          {% set d = dict(d, transition=entity_9_light_transition_on) %}
+        {% endif %}
+        {% if entity_9_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_9_light_colour_temperature) %}
+        {% elif entity_9_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_9_light_rgb_colour) %}
+        {% elif entity_9_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_9_light_rgbw_colour) %}
+        {% elif entity_9_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_9_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_9, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_9}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_10 %}
+      {% set entity_domain = entity_10.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_brightness' in entity_10_include_light_control %}
+          {% set d = dict(d, brightness_pct=entity_10_light_brightness) %}
+        {% endif %}
+        {% if 'use_transition' in entity_10_include_light_control %}
+          {% set d = dict(d, transition=entity_10_light_transition_on) %}
+        {% endif %}
+        {% if entity_10_include_light_colour_control == 'use_colour_temperature' %}
+          {% set d = dict(d, color_temp_kelvin=entity_10_light_colour_temperature) %}
+        {% elif entity_10_include_light_colour_control == 'use_rgb_colour' %}
+          {% set d = dict(d, rgb_color=entity_10_light_rgb_colour) %}
+        {% elif entity_10_include_light_colour_control == 'use_rgbw_colour' %}
+          {% set d = dict(d, rgbw_color=entity_10_light_rgbw_colour) %}
+        {% elif entity_10_include_light_colour_control == 'use_rgbww_colour' %}
+          {% set d = dict(d, rgbww_color=entity_10_light_rgbww_colour) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_10, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_10}] %}
+      {% endif %}
+    {% endif %}
+    {{ entities }}
+
+  entities_turn_off: >
+    {% set entities = [] %}
+    {% if entity_1 %}
+      {% set entity_domain = entity_1.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_1_include_light_control %}
+          {% set d = dict(d, transition=entity_1_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_1, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_1}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_2 %}
+      {% set entity_domain = entity_2.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_2_include_light_control %}
+          {% set d = dict(d, transition=entity_2_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_2, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_2}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_3 %}
+      {% set entity_domain = entity_3.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_3_include_light_control %}
+          {% set d = dict(d, transition=entity_3_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_3, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_3}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_4 %}
+      {% set entity_domain = entity_4.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_4_include_light_control %}
+          {% set d = dict(d, transition=entity_4_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_4, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_4}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_5 %}
+      {% set entity_domain = entity_5.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_5_include_light_control %}
+          {% set d = dict(d, transition=entity_5_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_5, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_5}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_6 %}
+      {% set entity_domain = entity_6.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_6_include_light_control %}
+          {% set d = dict(d, transition=entity_6_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_6, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_6}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_7 %}
+      {% set entity_domain = entity_7.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_7_include_light_control %}
+          {% set d = dict(d, transition=entity_7_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_7, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_7}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_8 %}
+      {% set entity_domain = entity_8.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_8_include_light_control %}
+          {% set d = dict(d, transition=entity_8_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_8, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_8}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_9 %}
+      {% set entity_domain = entity_9.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_9_include_light_control %}
+          {% set d = dict(d, transition=entity_9_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_9, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_9}] %}
+      {% endif %}
+    {% endif %}
+    {% if entity_10 %}
+      {% set entity_domain = entity_10.split('.')[0] %}
+      {% if entity_domain == 'light' %}
+        {% set d = {} %}
+        {% if 'use_transition' in entity_10_include_light_control %}
+          {% set d = dict(d, transition=entity_10_light_transition_off) %}
+        {% endif %}
+        {% set entities = entities + [{'id': entity_10, 'data': d}] %}
+      {% else %}
+        {% set entities = entities + [{'id': entity_10}] %}
+      {% endif %}
+    {% endif %}
+    {{ entities }}
+
+  entities_inv: >
+    {% set inv_list = namespace(x = []) %}
+    {% for i in range(entities | length - 1, -1, -1) %}
+      {% set inv_list.x = inv_list.x + [entities[i]] %}
+    {% endfor %}
+    {{ inv_list.x }}
+
+  entities_inv_turn_off: >
+    {% set inv_list = namespace(x = []) %}
+    {% for i in range(entities_turn_off | length - 1, -1, -1) %}
+      {% set inv_list.x = inv_list.x + [entities_turn_off[i]] %}
+    {% endfor %}
+    {{ inv_list.x }}
+
+  entities_shuffled: >
+    {% set shuffled_list = namespace(x = entities) %}
+    {% for current_index in range(shuffled_list.x | length - 1, 0, -1) %}
+        {% set swap_index = range(0, current_index + 1) | random %}
+        {% if swap_index != current_index %}
+          {% set shuffled_list.x = shuffled_list.x[:swap_index] + [shuffled_list.x[current_index]] + shuffled_list.x[swap_index + 1:current_index] + [shuffled_list.x[swap_index]] + shuffled_list.x[current_index + 1:] %}
+        {% endif %}
+    {% endfor %}
+    {{ shuffled_list.x }}
+
+  entities_shuffled_turn_off: >
+    {% set shuffled_list = namespace(x = entities_turn_off) %}
+    {% for current_index in range(shuffled_list.x | length - 1, 0, -1) %}
+        {% set swap_index = range(0, current_index + 1) | random %}
+        {% if swap_index != current_index %}
+          {% set shuffled_list.x = shuffled_list.x[:swap_index] + [shuffled_list.x[current_index]] + shuffled_list.x[swap_index + 1:current_index] + [shuffled_list.x[swap_index]] + shuffled_list.x[current_index + 1:] %}
+        {% endif %}
+    {% endfor %}
+    {{ shuffled_list.x }}
+
+triggers:
+  - trigger: time
+    id: "t0"
+    at: !input on_time
+  - trigger: numeric_state
+    id: "t1"
+    entity_id: sun.sun
+    attribute: elevation
+    below: !input sun_elevation
+  - trigger: numeric_state
+    id: "t2"
+    entity_id: !input ambient_light_sensor
+    below: !input ambient_light_value
+  - trigger: state
+    id: "t3"
+    entity_id: !input entity_state_on
+    from: "off"
+    to: "on"
+  - trigger: state
+    id: "t4"
+    entity_id: !input entity_state_off
+    from: "on"
+    to: "off"
+
+# All Conditions
+condition:
+# Automation Control
+  - condition: or
+    conditions:
+      - condition: template
+        value_template: "{{ automation_control == 'disable_automation_control' }}"
+      # Check entity state
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ automation_control == 'enable_entity_state' }}"
+          - condition: state
+            entity_id: !input automation_control_entity
+            state: 'on'
+      # Check start & end date
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ automation_control == 'enable_start_end_date' }}"
+          - condition: template
+            value_template: >
+              {% set start_date = automation_control_start_date | as_datetime %}
+              {% set end_date = automation_control_end_date | as_datetime %}
+              {% set now = now().replace(tzinfo=None) %}
+              {{ start_date <= now <= end_date }}
+      # Check the Device Tracker Options
+      - condition: and
+        conditions:
+        - "{{ automation_control == 'enable_zone' }}"
+        - condition: numeric_state
+          entity_id: !input automation_control_zone
+          below: 1
+      - condition: and
+        conditions:
+        - "{{ automation_control == 'enable_people' }}"
+        - "{{ (state_attr(automation_control_zone, 'persons') | list | select('in', automation_control_people) | list | length) == 0 }}"
+
+# Global Conditions
+  - condition: and
+    conditions: !input global_conditions
+
+# Trigger conditions
+  - condition: or
+    conditions:
+      - condition: and # trigger by time ON
+        conditions:
+          - condition: template
+            value_template: "{{ trigger_selection == 'time_on' }}"
+          - condition: trigger
+            id: 't0'
+      - condition: and # trigger by sun falling
+        conditions:
+          - condition: template
+            value_template: "{{ trigger_selection == 'sun_elevation' }}"
+          - condition: trigger
+            id: 't1'
+      - condition: and # trigger by ambient low LUX - ON
+        conditions:
+          - condition: template
+            value_template: "{{ trigger_selection == 'ambient_light' }}"
+          - condition: trigger
+            id: 't2'
+      - condition: and # trigger by entity state - ON
+        conditions:
+          - condition: template
+            value_template: "{{ trigger_selection == 'entity_state_on' }}"
+          - condition: trigger
+            id: 't3'
+      - condition: and # trigger by entity state - OFF
+        conditions:
+          - condition: template
+            value_template: "{{ trigger_selection == 'entity_state_off' }}"
+          - condition: trigger
+            id: 't4'
+
+# Check The Weekday Option
+  - condition: or
+    conditions:
+      - condition: template
+        value_template: "{{ include_weekdays == 'weekday_disabled' }}"
+      - condition: and
+        conditions:
+        - condition: time
+          weekday: !input weekday_options
+        - condition: template
+          value_template: "{{ include_weekdays == 'weekday_enabled' }}"
+
+action:
+  - choose:
+    - alias: "Check if turn ON time is enabled"
+      conditions:
+        - condition: template
+          value_template: "{{ trigger_selection == 'time_on' }}"
+      sequence:
+        - delay: 
+            minutes: >
+              {% if on_time_delay > 0 %}
+                {{ range(1, on_time_delay + 1) | random }}
+              {% else %}
+                0
+              {% endif %}
+    - alias: "Check if entity state ON is enabled"
+      conditions:
+        - condition: template
+          value_template: "{{ trigger_selection == 'entity_state_on' }}"
+      sequence:
+        - delay: 
+            seconds: >
+              {% if entity_state_on_time_delay > 0 %}
+                {{ range(1, (entity_state_on_time_delay * 60) + 1) | random }}
+              {% else %}
+                0
+              {% endif %}
+    - alias: "Check if entity state OFF is enabled"
+      conditions:
+        - condition: template
+          value_template: "{{ trigger_selection == 'entity_state_off' }}"
+      sequence:
+        - delay: 
+            seconds: >
+              {% if entity_state_off_time_delay > 0 %}
+                {{ range(1, entity_state_off_time_delay + 1) | random }}
+              {% else %}
+                0
+              {% endif %}
+  - choose:
+    - alias: "Used for - Minimum / Maximum ON Time - Earliest and Latest Time Range - Entity State ON & OFF"
+      conditions:
+        - condition: template
+          value_template: "{{ time_off_selection != 'random_activity_window' }}"
+      sequence:
+        - choose:
+          - alias: "Turn ON actions"
+            conditions:
+              - condition: template
+                value_template: "{{ entity_order_on in ['entities_on_in_sequence', 'entities_on_in_reverse_order', 'entities_on_shuffled', 'entities_on_same_time'] }}"
+            sequence:
+              - choose:
+                - alias: "Check if in sequence is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_on == 'entities_on_in_sequence' }}"
+                  sequence:
+                    - alias: "Entities ON In Sequence Order"
+                      repeat:
+                        count: "{{ entities | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_on_delay > 0 %}
+                                        {{ range(1, random_on_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_on
+                                    target:
+                                      entity_id: "{{ entities[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities[repeat.index - 1].data is defined %}
+                                        {{ entities[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_on
+                                    data:
+                                      entity_id: "{{ entities[repeat.index - 1].id }}"
+                - alias: "Check if reverse order is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_on == 'entities_on_in_reverse_order' }}"
+                  sequence:
+                    - alias: "Entities ON in Reverse Order"
+                      repeat:
+                        count: "{{ entities_inv | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_on_delay > 0 %}
+                                        {{ range(1, random_on_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_inv[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_on
+                                    target:
+                                      entity_id: "{{ entities_inv[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_inv[repeat.index - 1].data is defined %}
+                                        {{ entities_inv[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_inv[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_on
+                                    data:
+                                      entity_id: "{{ entities_inv[repeat.index - 1].id }}"
+                - alias: "Check if Shuffled is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_on == 'entities_on_shuffled' }}"
+                  sequence:
+                    - alias: "Entities ON in Shuffled Order"
+                      repeat:
+                        count: "{{ entities_shuffled | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_on_delay > 0 %}
+                                        {{ range(1, random_on_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_shuffled[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_on
+                                    target:
+                                      entity_id: "{{ entities_shuffled[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_shuffled[repeat.index - 1].data is defined %}
+                                        {{ entities_shuffled[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_shuffled[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_on
+                                    data:
+                                      entity_id: "{{ entities_shuffled[repeat.index - 1].id }}"
+                - alias: "Check if same time is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_on == 'entities_on_same_time' }}"
+                  sequence:
+                    - alias: "Turn ON all lights individually so each can have its own data"
+                      repeat:
+                        count: "{{ entities | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_on
+                                    target:
+                                      entity_id: "{{ entities[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities[repeat.index - 1].data is defined %}
+                                        {{ entities[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_on
+                                    data:
+                                      entity_id: "{{ entities[repeat.index - 1].id }}"
+              - choose:
+                - alias: "Used for min, max run time"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ time_off_selection == 'min_max_on_time' }}"
+                  sequence:
+                    - delay: >
+                        {% set min_total_seconds = (min_on_time.hours | int * 3600) +
+                                                  (min_on_time.minutes | int * 60) +
+                                                  (min_on_time.seconds | int) %}
+                        {% set max_total_seconds = (max_on_time.hours | int * 3600) +
+                                                  (max_on_time.minutes | int * 60) +
+                                                  (max_on_time.seconds | int) %}
+                        {% if min_total_seconds < max_total_seconds %}
+                          {{ range(min_total_seconds, max_total_seconds) | random }}
+                        {% else %}
+                          {{ min_total_seconds }}
+                        {% endif %}
+                - alias: "Used for start and end range"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ time_off_selection == 'earliest_latest_time_range' }}"
+                  sequence:
+                    - variables:
+                        start_time: !input start_time_range
+                        end_time: !input end_time_range
+                        random_time: >
+                          {% set start_total_seconds = (start_time.split(':')[0] | int * 3600) +
+                                                      (start_time.split(':')[1] | int * 60) +
+                                                      (start_time.split(':')[2] | int(0)) %}
+                          {% set end_total_seconds = (end_time.split(':')[0] | int * 3600) +
+                                                    (end_time.split(':')[1] | int * 60) +
+                                                    (end_time.split(':')[2] | int(0)) %}
+                          {% if end_total_seconds < start_total_seconds %}
+                            {% set end_total_seconds = end_total_seconds + 86400 %}
+                          {% endif %}
+                          {% set random_seconds = range(start_total_seconds, end_total_seconds) | random %}
+                          {{ '%02d:%02d:%02d' | format(random_seconds // 3600,
+                                                      (random_seconds % 3600) // 60,
+                                                      random_seconds % 60) }}
+                        delay_seconds: >
+                          {% set current_total_seconds = now().hour * 3600 + now().minute * 60 + now().second %}
+                          {% set random_total_seconds = (random_time.split(':')[0] | int * 3600) +
+                                                        (random_time.split(':')[1] | int * 60) +
+                                                        (random_time.split(':')[2] | int) %}
+                          {{ (random_total_seconds - current_total_seconds) % 86400 }}
+                    - delay: "{{ delay_seconds | int }}"
+                - alias: "Used for entity on state"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ time_off_selection == 'entity_on_state' }}"
+                  sequence:
+                    - wait_for_trigger:
+                        - trigger: state
+                          entity_id: !input entity_on_state
+                          from: "off"
+                          to: "on"
+                    - delay: 
+                        seconds: >
+                          {% if entity_on_state_time_delay > 0 %}
+                            {{ range(1, entity_on_state_time_delay + 1) | random }}
+                          {% else %}
+                            0
+                          {% endif %}
+                - alias: "Used for entity off state"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ time_off_selection == 'entity_off_state' }}"
+                  sequence:
+                    - wait_for_trigger:
+                        - trigger: state
+                          entity_id: !input entity_off_state
+                          from: "on"
+                          to: "off"
+                    - delay: 
+                        seconds: >
+                          {% if entity_off_state_time_delay > 0 %}
+                            {{ range(1, entity_off_state_time_delay + 1) | random }}
+                          {% else %}
+                            0
+                          {% endif %}
+        - choose:
+          - alias: "Turn OFF actions"
+            conditions:
+              - condition: template
+                value_template: "{{ entity_order_off in ['entities_off_in_sequence', 'entities_off_in_reverse_order', 'entities_off_shuffled', 'entities_off_same_time'] }}"
+            sequence:
+              - choose:
+                - alias: "Check if in sequence is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_off == 'entities_off_in_sequence' }}"
+                  sequence:
+                    - alias: "Entities OFF In Sequence Order"
+                      repeat:
+                        count: "{{ entities | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_off_delay > 0 %}
+                                        {{ range(1, random_off_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_off
+                                    target:
+                                      entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_turn_off[repeat.index - 1].data is defined %}
+                                        {{ entities_turn_off[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_off
+                                    data:
+                                      entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                - alias: "Check if reverse order is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_off == 'entities_off_in_reverse_order' }}"
+                  sequence:
+                    - alias: "Entities OFF in Reverse Order"
+                      repeat:
+                        count: "{{ entities_inv | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_off_delay > 0 %}
+                                        {{ range(1, random_off_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_inv_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_off
+                                    target:
+                                      entity_id: "{{ entities_inv_turn_off[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_inv_turn_off[repeat.index - 1].data is defined %}
+                                        {{ entities_inv_turn_off[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_inv_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_off
+                                    data:
+                                      entity_id: "{{ entities_inv_turn_off[repeat.index - 1].id }}"
+                - alias: "Check if Shuffled is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_off == 'entities_off_shuffled' }}"
+                  sequence:
+                    - alias: "Entities OFF in Shuffled Order"
+                      repeat:
+                        count: "{{ entities_shuffled_turn_off | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ repeat.index > 1 }}"
+                                sequence:
+                                  - delay: >
+                                      {% if random_off_delay > 0 %}
+                                        {{ range(1, random_off_delay + 1) | random }}
+                                      {% else %}
+                                        0
+                                      {% endif %}
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_shuffled_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_off
+                                    target:
+                                      entity_id: "{{ entities_shuffled_turn_off[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_shuffled_turn_off[repeat.index - 1].data is defined %}
+                                        {{ entities_shuffled_turn_off[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_shuffled_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_off
+                                    data:
+                                      entity_id: "{{ entities_shuffled_turn_off[repeat.index - 1].id }}"
+                - alias: "Check if same time is selected"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_off == 'entities_off_same_time' }}"
+                  sequence:
+                    - alias: "Turn OFF all lights individually so each can have its own data"
+                      repeat:
+                        count: "{{ entities_turn_off | length }}"
+                        sequence:
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                sequence:
+                                  - action: light.turn_off
+                                    target:
+                                      entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                                    data: >
+                                      {% if entities_turn_off[repeat.index - 1].data is defined %}
+                                        {{ entities_turn_off[repeat.index - 1].data }}
+                                      {% else %}
+                                        {}
+                                      {% endif %}
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                sequence:
+                                  - action: homeassistant.turn_off
+                                    data:
+                                      entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+    - alias: "Used for random activity window"
+      conditions:
+        - condition: template
+          value_template: "{{ time_off_selection == 'random_activity_window' }}"
+      sequence:
+        - variables:
+            cycle_count: !input activity_cycle_count
+            window_seconds: >
+              {{
+                (activity_window_duration.hours | int * 3600) +
+                (activity_window_duration.minutes | int * 60) +
+                (activity_window_duration.seconds | int)
+              }}
+            min_on_seconds: >
+              {{
+                (activity_min_on_time.hours | int * 3600) +
+                (activity_min_on_time.minutes | int * 60) +
+                (activity_min_on_time.seconds | int)
+              }}
+            max_on_seconds: >
+              {{
+                (activity_max_on_time.hours | int * 3600) +
+                (activity_max_on_time.minutes | int * 60) +
+                (activity_max_on_time.seconds | int)
+              }}
+            min_off_seconds: >
+              {{
+                (activity_min_off_time.hours | int * 3600) +
+                (activity_min_off_time.minutes | int * 60) +
+                (activity_min_off_time.seconds | int)
+              }}
+            max_off_seconds: >
+              {{
+                (activity_max_off_time.hours | int * 3600) +
+                (activity_max_off_time.minutes | int * 60) +
+                (activity_max_off_time.seconds | int)
+              }}
+            minimum_required_seconds: >
+              {{
+                (cycle_count * min_on_seconds)
+                +
+                ((cycle_count - 1) * min_off_seconds)
+              }}
+        - condition: template
+          value_template: >
+            {{ minimum_required_seconds < window_seconds }}
+        - variables:
+            remaining_pool: >
+              {{ window_seconds - minimum_required_seconds }}
+            schedule: >
+              {% set activity_window = namespace(
+                  activity_schedule=[]
+                )
+              %}
+              {% for cycle in range(cycle_count) %}
+                {% set cycle_on_time =
+                  range(min_on_seconds, max_on_seconds + 1) | random %}
+                {% if cycle < (cycle_count - 1) %}
+                  {% set cycle_off_time =
+                    range(min_off_seconds, max_off_seconds + 1) | random %}
+                {% else %}
+                  {% set cycle_off_time = 0 %}
+                {% endif %}
+                {% set activity_window.activity_schedule =
+                  activity_window.activity_schedule + [
+                    {
+                      'cycle_on_time': cycle_on_time,
+                      'cycle_off_time': cycle_off_time
+                    }
+                  ]
+                %}
+              {% endfor %}
+              {{ activity_window.activity_schedule }}
+        - repeat:
+            for_each: "{{ schedule }}"
+            sequence:
+              - variables:
+                  current_cycle_on_time: "{{ repeat.item.cycle_on_time }}"
+                  current_cycle_off_time: "{{ repeat.item.cycle_off_time }}"
+              - choose:
+                - alias: "Turn ON actions"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_on in ['entities_on_in_sequence', 'entities_on_in_reverse_order', 'entities_on_shuffled', 'entities_on_same_time'] }}"
+                  sequence:
+                    - choose:
+                      - alias: "Check if in sequence is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_on == 'entities_on_in_sequence' }}"
+                        sequence:
+                          - alias: "Entities ON In Sequence Order"
+                            repeat:
+                              count: "{{ entities | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_on_delay > 0 %}
+                                              {{ range(1, random_on_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_on
+                                          target:
+                                            entity_id: "{{ entities[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities[repeat.index - 1].data is defined %}
+                                              {{ entities[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_on
+                                          data:
+                                            entity_id: "{{ entities[repeat.index - 1].id }}"
+                      - alias: "Check if reverse order is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_on == 'entities_on_in_reverse_order' }}"
+                        sequence:
+                          - alias: "Entities ON in Reverse Order"
+                            repeat:
+                              count: "{{ entities_inv | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_on_delay > 0 %}
+                                              {{ range(1, random_on_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_inv[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_on
+                                          target:
+                                            entity_id: "{{ entities_inv[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_inv[repeat.index - 1].data is defined %}
+                                              {{ entities_inv[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_inv[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_on
+                                          data:
+                                            entity_id: "{{ entities_inv[repeat.index - 1].id }}"
+                      - alias: "Check if Shuffled is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_on == 'entities_on_shuffled' }}"
+                        sequence:
+                          - alias: "Entities ON in Shuffled Order"
+                            repeat:
+                              count: "{{ entities_shuffled | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_on_delay > 0 %}
+                                              {{ range(1, random_on_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_shuffled[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_on
+                                          target:
+                                            entity_id: "{{ entities_shuffled[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_shuffled[repeat.index - 1].data is defined %}
+                                              {{ entities_shuffled[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_shuffled[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_on
+                                          data:
+                                            entity_id: "{{ entities_shuffled[repeat.index - 1].id }}"
+                      - alias: "Check if same time is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_on == 'entities_on_same_time' }}"
+                        sequence:
+                          - alias: "Turn ON all lights individually so each can have its own data"
+                            repeat:
+                              count: "{{ entities | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_on
+                                          target:
+                                            entity_id: "{{ entities[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities[repeat.index - 1].data is defined %}
+                                              {{ entities[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_on
+                                          data:
+                                            entity_id: "{{ entities[repeat.index - 1].id }}"
+                    - choose:
+                      - alias: "Used for min, max run time"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ time_off_selection == 'min_max_on_time' }}"
+                        sequence:
+                          - delay: >
+                              {% set min_total_seconds = (min_on_time.hours | int * 3600) +
+                                                        (min_on_time.minutes | int * 60) +
+                                                        (min_on_time.seconds | int) %}
+                              {% set max_total_seconds = (max_on_time.hours | int * 3600) +
+                                                        (max_on_time.minutes | int * 60) +
+                                                        (max_on_time.seconds | int) %}
+                              {% if min_total_seconds < max_total_seconds %}
+                                {{ range(min_total_seconds, max_total_seconds) | random }}
+                              {% else %}
+                                {{ min_total_seconds }}
+                              {% endif %}
+                      - alias: "Used for start and end range"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ time_off_selection == 'earliest_latest_time_range' }}"
+                        sequence:
+                          - variables:
+                              start_time: !input start_time_range
+                              end_time: !input end_time_range
+                              random_time: >
+                                {% set start_total_seconds = (start_time.split(':')[0] | int * 3600) +
+                                                            (start_time.split(':')[1] | int * 60) +
+                                                            (start_time.split(':')[2] | int(0)) %}
+                                {% set end_total_seconds = (end_time.split(':')[0] | int * 3600) +
+                                                          (end_time.split(':')[1] | int * 60) +
+                                                          (end_time.split(':')[2] | int(0)) %}
+                                {% if end_total_seconds < start_total_seconds %}
+                                  {% set end_total_seconds = end_total_seconds + 86400 %}
+                                {% endif %}
+                                {% set random_seconds = range(start_total_seconds, end_total_seconds) | random %}
+                                {{ '%02d:%02d:%02d' | format(random_seconds // 3600,
+                                                            (random_seconds % 3600) // 60,
+                                                            random_seconds % 60) }}
+                              delay_seconds: >
+                                {% set current_total_seconds = now().hour * 3600 + now().minute * 60 + now().second %}
+                                {% set random_total_seconds = (random_time.split(':')[0] | int * 3600) +
+                                                              (random_time.split(':')[1] | int * 60) +
+                                                              (random_time.split(':')[2] | int) %}
+                                {{ (random_total_seconds - current_total_seconds) % 86400 }}
+                          - delay: "{{ delay_seconds | int }}"
+                      - alias: "Used for entity on state"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ time_off_selection == 'entity_on_state' }}"
+                        sequence:
+                          - wait_for_trigger:
+                              - trigger: state
+                                entity_id: !input entity_on_state
+                                from: "off"
+                                to: "on"
+                          - delay: 
+                              seconds: >
+                                {% if entity_on_state_time_delay > 0 %}
+                                  {{ range(1, entity_on_state_time_delay + 1) | random }}
+                                {% else %}
+                                  0
+                                {% endif %}
+                      - alias: "Used for entity off state"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ time_off_selection == 'entity_off_state' }}"
+                        sequence:
+                          - wait_for_trigger:
+                              - trigger: state
+                                entity_id: !input entity_off_state
+                                from: "on"
+                                to: "off"
+                          - delay: 
+                              seconds: >
+                                {% if entity_off_state_time_delay > 0 %}
+                                  {{ range(1, entity_off_state_time_delay + 1) | random }}
+                                {% else %}
+                                  0
+                                {% endif %}
+              - delay:
+                  seconds: "{{ current_cycle_on_time }}"
+              - choose:
+                - alias: "Turn OFF actions"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ entity_order_off in ['entities_off_in_sequence', 'entities_off_in_reverse_order', 'entities_off_shuffled', 'entities_off_same_time'] }}"
+                  sequence:
+                    - choose:
+                      - alias: "Check if in sequence is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_off == 'entities_off_in_sequence' }}"
+                        sequence:
+                          - alias: "Entities OFF In Sequence Order"
+                            repeat:
+                              count: "{{ entities | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_off_delay > 0 %}
+                                              {{ range(1, random_off_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_off
+                                          target:
+                                            entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_turn_off[repeat.index - 1].data is defined %}
+                                              {{ entities_turn_off[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_off
+                                          data:
+                                            entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                      - alias: "Check if reverse order is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_off == 'entities_off_in_reverse_order' }}"
+                        sequence:
+                          - alias: "Entities OFF in Reverse Order"
+                            repeat:
+                              count: "{{ entities_inv | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_off_delay > 0 %}
+                                              {{ range(1, random_off_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_inv_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_off
+                                          target:
+                                            entity_id: "{{ entities_inv_turn_off[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_inv_turn_off[repeat.index - 1].data is defined %}
+                                              {{ entities_inv_turn_off[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_inv_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_off
+                                          data:
+                                            entity_id: "{{ entities_inv_turn_off[repeat.index - 1].id }}"
+                      - alias: "Check if Shuffled is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_off == 'entities_off_shuffled' }}"
+                        sequence:
+                          - alias: "Entities OFF in Shuffled Order"
+                            repeat:
+                              count: "{{ entities_shuffled_turn_off | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ repeat.index > 1 }}"
+                                      sequence:
+                                        - delay: >
+                                            {% if random_off_delay > 0 %}
+                                              {{ range(1, random_off_delay + 1) | random }}
+                                            {% else %}
+                                              0
+                                            {% endif %}
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_shuffled_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_off
+                                          target:
+                                            entity_id: "{{ entities_shuffled_turn_off[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_shuffled_turn_off[repeat.index - 1].data is defined %}
+                                              {{ entities_shuffled_turn_off[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_shuffled_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_off
+                                          data:
+                                            entity_id: "{{ entities_shuffled_turn_off[repeat.index - 1].id }}"
+                      - alias: "Check if same time is selected"
+                        conditions:
+                          - condition: template
+                            value_template: "{{ entity_order_off == 'entities_off_same_time' }}"
+                        sequence:
+                          - alias: "Turn OFF all lights individually so each can have its own data"
+                            repeat:
+                              count: "{{ entities_turn_off | length }}"
+                              sequence:
+                                - choose:
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] == 'light' }}"
+                                      sequence:
+                                        - action: light.turn_off
+                                          target:
+                                            entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+                                          data: >
+                                            {% if entities_turn_off[repeat.index - 1].data is defined %}
+                                              {{ entities_turn_off[repeat.index - 1].data }}
+                                            {% else %}
+                                              {}
+                                            {% endif %}
+                                    - conditions:
+                                        - condition: template
+                                          value_template: "{{ entities_turn_off[repeat.index - 1].id.split('.')[0] != 'light' }}"
+                                      sequence:
+                                        - action: homeassistant.turn_off
+                                          data:
+                                            entity_id: "{{ entities_turn_off[repeat.index - 1].id }}"
+              - if:
+                  - condition: template
+                    value_template: "{{ current_cycle_off_time > 0 }}"
+                then:
+                  - delay:
+                      seconds: "{{ current_cycle_off_time }}"

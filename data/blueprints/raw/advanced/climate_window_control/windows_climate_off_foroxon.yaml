@@ -1,0 +1,42 @@
+blueprint:
+  name: Window/Door open, climate off after a defined time
+  description: An automation that turns off a running your climate device for exmple a heater
+    or an air conditioning if a window or door sensor is open for a specific time.
+  domain: automation
+  input:
+    window_door_entity:
+      name: Window/Door Sensors
+      description: The window or door sensors that controls the climate entity.
+      selector:
+        entity: {}
+    minimum_open_time:
+      name: Miniumum time the window is open
+      description: Time in seconds to wait until the automation is triggered
+      default: 12
+      selector:
+        number:
+          min: 0.0
+          max: 120.0
+          unit_of_measurement: seconds
+          mode: slider
+          step: 1.0
+    climate_target:
+      name: Climate Device
+      description: The climate entity that is controlled by the window sensor.
+      selector:
+          entity:
+            domain: climate
+trigger:
+- platform: state
+  entity_id: !input 'window_door_entity'
+  to: 'on'
+  for: !input 'minimum_open_time'
+condition:
+- condition: not
+  conditions:
+    - condition: state
+      entity_id: !input 'climate_target'
+      state: 'off'
+action:
+- service: climate.turn_off
+  entity_id: !input 'climate_target'

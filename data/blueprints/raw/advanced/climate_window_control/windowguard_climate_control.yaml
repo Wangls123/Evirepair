@@ -1,0 +1,62 @@
+blueprint:
+  name: Heating off when windows are open
+  description: This blueprint intelligently manages your heating or cooling systems based on window sensor activity, conserving energy by suspending climate control when a window is open and restoring settings after user-defined delays for opening and closing the window.
+  domain: automation
+  input:
+    window_sensor:
+      name: Window Sensor
+      description: Select the sensor that monitors your windows. Useful for controlling heating or cooling based on window status.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: window
+    target_climate:
+      name: Climate Control Entity
+      description: Choose the climate control entity to manage, like your heater, AC, or thermostat.
+      selector:
+        entity:
+          domain: climate
+    window_open_delay:
+      name: Delay After Window Opens
+      description: Time to wait after the window opens before suspending climate control.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: seconds
+    window_close_delay:
+      name: Delay After Window Closes
+      description: Time to wait after the window closes before restoring climate control settings.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: seconds
+
+trigger:
+  - platform: state
+    entity_id: !input window_sensor
+
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input window_sensor
+            state: "on"
+        sequence:
+          - delay: !input window_open_delay
+          - service: climate.turn_off
+            target:
+              entity_id: !input target_climate
+
+      - conditions:
+          - condition: state
+            entity_id: !input window_sensor
+            state: "off"
+        sequence:
+          - delay: !input window_close_delay
+          - service: climate.turn_on
+            target:
+              entity_id: !input target_climate

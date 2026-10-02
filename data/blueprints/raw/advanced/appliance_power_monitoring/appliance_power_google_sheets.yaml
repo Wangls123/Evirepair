@@ -1,0 +1,478 @@
+blueprint:
+  name: Power State Monitor
+  description: |
+    Monitor power consumption of appliances and log their activities to Google Sheets.
+    Can detect 2 states (idle/working) or 3 states (idle/working/extra activity).
+
+    ## 📊 DEVICE TYPES & POWER PATTERNS
+
+    1. **Two-State Devices** (Working/Idle):
+       - Typical devices: Washing machines, dryers, freezers
+       - Power pattern:
+         * Idle: Very low power (0-5W)
+         * Working: High power (200-1000W)
+       - Examples:
+         * Washing Machine: 1.2W idle, 350-500W washing
+         * Dryer: 2-3W idle, 800-1000W drying
+         * Freezer: 0-2W idle, 150-300W cooling
+
+    2. **Three-State Devices** (Working/Idle/Extra):
+       - Typical devices: Refrigerators with door lights, water dispensers
+       - Power pattern:
+         * Idle: Very low power (0-5W)
+         * Working: Medium power (150-300W)
+         * Extra activity: Small power spike (30-70W)
+       - Example: Modern Fridge
+         * Idle: 0-2W
+         * Compressor ON: 150-250W
+         * Door Open: +35W to +70W spike
+         * Door Close: -35W to -70W drop
+         * Water/Ice: +40W to +80W spike
+
+    ## 🔧 SETUP INSTRUCTIONS
+
+    1. **Create Required Helper Entities:**
+       - Create these helpers **before** using the blueprint.
+       - Go to **Settings > Devices & Services > Helpers > Create Helper**.
+
+       For example with worksheet name "kitchen_fridge":
+       a) **Two Input Boolean Helpers:**
+          - **Name:** Kitchen Fridge Is Working
+            - **Entity ID:** `input_boolean.kitchen_fridge_is_working`
+            - **Description:** Tracks if device is currently working.
+          
+          - **Name:** Kitchen Fridge Extra State
+            - **Entity ID:** `input_boolean.kitchen_fridge_extra_state`
+            - **Description:** Tracks extra state like door open.
+       
+       b) **Two Input DateTime Helpers:**
+          - **Name:** Kitchen Fridge Working Started
+            - **Entity ID:** `input_datetime.kitchen_fridge_working_started`
+            - **Enable:** Both date and time.
+            - **Description:** Records when device started working.
+          
+          - **Name:** Kitchen Fridge Extra Started
+            - **Entity ID:** `input_datetime.kitchen_fridge_extra_started`
+            - **Enable:** Both date and time.
+            - **Description:** Records when extra state started.
+
+    2. **Power Sensor Requirements:**
+       - Must be a power sensor (W) with frequent updates.
+       - For door detection: sensor should update at least every 5 seconds.
+       - **Recommended:** Use a power meter with 1-second updates.
+
+    3. **Door Event Detection:**
+       - Door Open: Detected immediately when power increases by 30-70W (configurable).
+       - Door Close: Has a 2-second delay after power drops by 30-70W to allow power to stabilize.
+       - Power changes must occur while the door is in the opposite state.
+       - Multiple power changes during the delay are handled automatically.
+
+  domain: automation
+  input:
+    # Power Sensor
+    power_sensor:
+      name: Power Sensor
+      description: Power sensor entity measuring the device's power consumption in watts
+      selector:
+        entity:
+          domain: sensor
+          device_class: power
+          multiple: false
+
+    # Power Thresholds
+    working_power_threshold:
+      name: Working Power Threshold
+      description: >
+        Power level (watts) that indicates device is actively working.
+        Must be higher than idle power and lower than any extra state power.
+      default: 200
+      selector:
+        number:
+          min: 10
+          max: 4000
+          unit_of_measurement: W
+          mode: slider
+          step: 5
+    idle_power_threshold:
+      name: Idle Power Threshold
+      description: >
+        Power level (watts) when device is idle (standby power).
+        Must be lower than working power threshold.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 20
+          unit_of_measurement: W
+          mode: slider
+          step: 5
+    extra_power_min:
+      name: Extra State Min Power Change
+      description: >
+        Minimum power increase (watts) that indicates extra activity.
+        For example: minimum power increase when fridge door opens.
+      default: 30
+      selector:
+        number:
+          min: 10
+          max: 1000
+          unit_of_measurement: W
+          mode: slider
+          step: 5
+    extra_power_max:
+      name: Extra State Max Power Change
+      description: >
+        Maximum power increase (watts) that indicates extra activity.
+        For example: maximum power increase when fridge door opens.
+      default: 70
+      selector:
+        number:
+          min: 10
+          max: 1000
+          unit_of_measurement: W
+          mode: slider
+          step: 5
+
+    # Helper Entities
+    is_working_boolean:
+      name: Working State Boolean
+      description: Helper boolean to track working state.
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    working_started_datetime:
+      name: Working State Start Time
+      description: Helper datetime to track when working state started.
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    extra_state_boolean:
+      name: Extra State Boolean
+      description: Helper boolean to track extra state.
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    extra_state_started_datetime:
+      name: Extra State Start Time
+      description: Helper datetime to track when extra state started.
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+
+    # Feature Toggles
+    enable_extra_state:
+      name: Enable Extra State Detection
+      description: >
+        Enable detection of extra state events (e.g., door open, water heating).
+        Turn this off if your device doesn't have a third state.
+      default: true
+      selector:
+        boolean:
+
+    # Google Sheets Configuration
+    config_entry_id:
+      name: Google Sheets Config Entry ID
+      description: >
+        Config Entry ID from Google Sheets integration.
+        To get your config_entry_id:
+        1. Create a new automation in Home Assistant
+        2. Add an action
+        3. Search for "Google Sheets append to sheet"
+        4. Select your sheet from the dropdown menu
+        5. Switch to YAML mode
+        6. Copy the config_entry value shown in the action
+      selector:
+        text:
+    worksheet_name:
+      name: Worksheet Name
+      description: >
+        Name of the worksheet you created in the Google Sheet from the integration setup.
+        Must match exactly with the worksheet name. Will also be used in notifications.
+      selector:
+        text:
+
+    # Notification Settings
+    notification_target:
+      name: Mobile App Devices
+      description: >
+        Select which mobile devices should receive notifications.
+        Leave empty to disable mobile notifications.
+      selector:
+        device:
+          integration: mobile_app
+          multiple: true
+    notify_web_ui:
+      name: Show Web UI Notifications
+      description: Whether to show notifications in Home Assistant UI.
+      default: true
+      selector:
+        boolean:
+    notify_extra_state_timeout:
+      name: Extra State Alert Timeout
+      description: >
+        Minutes before alerting about extra state left active.
+        Set to 0 to disable this alert.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 60
+          unit_of_measurement: min
+          mode: box
+          step: 1
+    notify_cycle_complete:
+      name: Cycle Complete Alert
+      description: >
+        Send notification when device finishes working.
+        Recommended for washers but not fridges.
+      default: false
+      selector:
+        boolean:
+    notification_title:
+      name: Notification Title
+      description: Title for notifications.
+      default: Power State Monitor
+      selector:
+        text:
+
+    # State Names
+    working_state_name:
+      name: Working State Name
+      description: Name for the working state (e.g., Compressor, Washing, Drying).
+      default: Working
+      selector:
+        text:
+    extra_state_name:
+      name: Extra State Name
+      description: Name for the extra state (e.g., Door, Water, Heating).
+      default: Extra
+      selector:
+        text:
+
+variables:
+  power_sensor_entity: !input power_sensor
+  working_started_entity: !input working_started_datetime
+  extra_started_entity: !input extra_state_started_datetime
+  extra_power_min: !input extra_power_min
+  extra_power_max: !input extra_power_max
+  min_power: "{{ states(power_sensor_entity) | float }}"
+  max_power: "{{ states(power_sensor_entity) | float }}"
+  elapsed_minutes: >
+    {% set start_time = states(working_started_entity) %}
+    {% if start_time not in ['unknown', '', 'unavailable'] %}
+      {% set start = as_datetime(start_time) | as_local %}
+      {% set now = now() | as_local %}
+      {% set duration = (now - start).total_seconds() %}
+      {{ (duration / 60) | round(2) }}
+    {% else %}
+      {{ 0 }}
+    {% endif %}
+  extra_state_elapsed_minutes: >
+    {% set start_time = states(extra_started_entity) %}
+    {% if start_time not in ['unknown', '', 'unavailable'] %}
+      {% set start = as_datetime(start_time) | as_local %}
+      {% set now = now() | as_local %}
+      {% set duration = (now - start).total_seconds() %}
+      {{ (duration / 60) | round(2) }}
+    {% else %}
+      {{ 0 }}
+    {% endif %}
+  should_notify: "{{ notification_target is not none and notification_target | length > 0 }}"
+  current_power: "{{ trigger.to_state.state | float if trigger.to_state.state not in ['unknown', 'unavailable'] else none }}"
+  previous_power: "{{ trigger.from_state.state | float if trigger.from_state.state not in ['unknown', 'unavailable'] else none }}"
+  power_change: "{{ current_power - previous_power if current_power is not none and previous_power is not none else none }}"
+  working_state_name: !input working_state_name
+  extra_state_name: !input extra_state_name
+
+trigger:
+  - platform: state
+    entity_id: !input power_sensor
+
+mode: parallel
+max: 4
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ current_power is not none and previous_power is not none }}"
+        sequence:
+          - choose:
+              # Extra State ON Event (power spike)
+              - conditions:
+                  - condition: template
+                    value_template: >
+                      {{ power_change is not none and
+                         power_change > (extra_power_min | float(0)) and 
+                         power_change < (extra_power_max | float(0)) }}
+                  - condition: state
+                    entity_id: !input extra_state_boolean
+                    state: "off"
+                sequence:
+                  - service: input_boolean.turn_on
+                    target:
+                      entity_id: !input extra_state_boolean
+                  - service: input_datetime.set_datetime
+                    target:
+                      entity_id: !input extra_state_started_datetime
+                    data:
+                      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+                  - service: google_sheets.append_sheet
+                    data:
+                      config_entry: !input config_entry_id
+                      worksheet: !input worksheet_name
+                      data:
+                        Date: "{{ now().strftime('%-d-%b-%y') }}"
+                        Time: "{{ now().strftime('%H:%M:%S') }}"
+                        State: "{{ extra_state_name }} ON"
+                        "Power Change": "{{ '%.1f' | format(power_change) }}W"
+                        "Elapsed Time": "00:00:00"
+                        "Elapsed Minutes": 0
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ should_notify and notify_extra_state_timeout > 0 }}"
+                        sequence:
+                          - delay:
+                              minutes: "{{ notify_extra_state_timeout | float }}"
+                          - condition: state
+                            entity_id: !input extra_state_boolean
+                            state: "on"
+                          - service: notify.notify
+                            data:
+                              title: "{{ notification_title }}"
+                              message: "{{ worksheet_name | title | replace('_', ' ') }} {{ extra_state_name | title | replace('_', ' ') }} has been ON for {{ notify_extra_state_timeout }} minutes!"
+                              data:
+                                tag: "extra_state_timeout"
+                          - if:
+                              - condition: template
+                                value_template: "{{ notify_web_ui }}"
+                            then:
+                              - service: persistent_notification.create
+                                data:
+                                  title: "{{ notification_title }}"
+                                  message: "{{ worksheet_name | title | replace('_', ' ') }} {{ extra_state_name | title | replace('_', ' ') }} has been ON for {{ notify_extra_state_timeout }} minutes!"
+                                  notification_id: "extra_state_timeout"
+              # Extra State OFF Event (power drop)
+              - conditions:
+                  - condition: template
+                    value_template: >
+                      {{ power_change is not none and
+                         power_change < -(extra_power_min | float(0)) and 
+                         power_change > -(extra_power_max | float(0)) }}
+                  - condition: state
+                    entity_id: !input extra_state_boolean
+                    state: "on"
+                sequence:
+                  - delay:
+                      seconds: 2
+                  - service: input_boolean.turn_off
+                    target:
+                      entity_id: !input extra_state_boolean
+                  - service: google_sheets.append_sheet
+                    data:
+                      config_entry: !input config_entry_id
+                      worksheet: !input worksheet_name
+                      data:
+                        Date: "{{ now().strftime('%-d-%b-%y') }}"
+                        Time: "{{ now().strftime('%H:%M:%S') }}"
+                        State: "{{ extra_state_name }} OFF"
+                        "Power Change": "{{ '%.1f' | format(power_change) }}W"
+                        "Elapsed Time": "{{ '%02d:%02d:%02d' | format((extra_state_elapsed_minutes * 60 // 3600)|int, ((extra_state_elapsed_minutes * 60 % 3600) // 60)|int, (extra_state_elapsed_minutes * 60 % 60)|int) }}"
+                        "Elapsed Minutes": "{{ extra_state_elapsed_minutes }}"
+                  - if:
+                      - condition: template
+                        value_template: "{{ should_notify }}"
+                    then:
+                      - service: notify.notify
+                        data:
+                          message: "clear_notification"
+                          data:
+                            tag: "extra_state_timeout"
+                      - if:
+                          - condition: template
+                            value_template: "{{ notify_web_ui }}"
+                        then:
+                          - service: persistent_notification.dismiss
+                            data:
+                              notification_id: "extra_state_timeout"
+              # Compressor ON Event
+              - conditions:
+                  - condition: numeric_state
+                    entity_id: !input power_sensor
+                    above: !input working_power_threshold
+                  - condition: state
+                    entity_id: !input is_working_boolean
+                    state: "off"
+                sequence:
+                  - service: input_boolean.turn_on
+                    target:
+                      entity_id: !input is_working_boolean
+                  - service: input_datetime.set_datetime
+                    target:
+                      entity_id: !input working_started_datetime
+                    data:
+                      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+                  - service: google_sheets.append_sheet
+                    data:
+                      config_entry: !input config_entry_id
+                      worksheet: !input worksheet_name
+                      data:
+                        Date: "{{ now().strftime('%-d-%b-%y') }}"
+                        Time: "{{ now().strftime('%H:%M:%S') }}"
+                        State: "{{ working_state_name }} ON"
+                        "Power Change": "{{ '%.1f' | format(power_change) }}W"
+                        "Elapsed Time": "00:00:00"
+                        "Elapsed Minutes": 0
+              # Compressor OFF Event
+              - conditions:
+                  - condition: numeric_state
+                    entity_id: !input power_sensor
+                    below: !input idle_power_threshold
+                  - condition: state
+                    entity_id: !input is_working_boolean
+                    state: "on"
+                sequence:
+                  - service: input_boolean.turn_off
+                    target:
+                      entity_id: !input is_working_boolean
+                  - service: google_sheets.append_sheet
+                    data:
+                      config_entry: !input config_entry_id
+                      worksheet: !input worksheet_name
+                      data:
+                        Date: "{{ now().strftime('%-d-%b-%y') }}"
+                        Time: "{{ now().strftime('%H:%M:%S') }}"
+                        State: "{{ working_state_name }} OFF"
+                        "Power Change": "{{ '%.1f' | format(power_change) }}W"
+                        "Elapsed Time": "{{ '%02d:%02d:%02d' | format((elapsed_minutes * 60 // 3600)|int, ((elapsed_minutes * 60 % 3600) // 60)|int, (elapsed_minutes * 60 % 60)|int) }}"
+                        "Elapsed Minutes": "{{ elapsed_minutes }}"
+                  - service: input_datetime.set_datetime
+                    target:
+                      entity_id: !input working_started_datetime
+                    data:
+                      datetime: ""
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ should_notify and notify_cycle_complete }}"
+                        sequence:
+                          - service: notify.notify
+                            data:
+                              title: "{{ notification_title }}"
+                              message: "{{ worksheet_name | title | replace('_', ' ') }} has finished working after {{ elapsed_minutes }} minutes"
+                              data:
+                                tag: "cycle_complete"
+                          - if:
+                              - condition: template
+                                value_template: "{{ notify_web_ui }}"
+                            then:
+                              - service: persistent_notification.create
+                                data:
+                                  title: "{{ notification_title }}"
+                                  message: "{{ worksheet_name | title | replace('_', ' ') }} has finished working after {{ elapsed_minutes }} minutes"
+                                  notification_id: "cycle_complete"

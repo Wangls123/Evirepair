@@ -1,0 +1,317 @@
+blueprint:
+  name: Control Light Entities From Motion & Other Triggers
+  description: >
+    Forked from YAMA with a number of changes and additions to meet my specific needs and customisation requirements.
+
+    Configure either only the light selector or with all time sensors for the best results.
+
+    Optionally configure the Override Blocker, Alarm State Blocker, and No Motion Blocker to further customise the results.
+
+    The Sleep Mode Override allows for a global scene override to ignore time of day and provide a more suitable scene (i.e. dim lighting or selective colouring) to assist with not disturbing other home dwellers.
+  domain: automation
+  input:
+    motion_entity:
+      name: Motion Sensor
+      description: Motion Sensor or a group with Motion Sensors (But can be anything switching between "on" and "off")
+      selector:
+        entity:
+    light_sensor:
+      name: Light Sensor (Optional)
+      description: Light Sensor used to detect light levels.
+      selector:
+        entity:
+    light_target:
+      name: Default Light
+      description: Default light to turn on/off if the timed scenes below are not configured.
+      selector:
+        target:
+          entity:
+            domain: light
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the light on after last motion is detected.
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    automation_blocker:
+      name: Override Blocker (Optional)
+      description: Only run if this entity is in the state specified below.
+      default:
+      selector:
+        entity:
+    automation_blocker_boolean:
+      name: Override Blocker State (Optional)
+      description: Desired state of override blocker, choose on for on and off for off. If on, but the above entity is off, the automation will not run.
+      default: false
+      selector:
+        boolean:
+    alarm_state_blocker:
+      name: Alarm State Blocker (Optional)
+      description: Only run if this alarm entity is in the disarmed state.
+      default: alarm_control_panel.alarmo
+      selector:
+        target:
+          entity:
+            domain: alarm_control_panel
+    no_motion_blocker:
+      name: Motion Time Out Blocker (Optional)
+      description: Motion time out does not trigger if this entity is in desired state.
+      default:
+      selector:
+        entity:
+    no_motion_blocker_boolean:
+      name: Motion Time Out State (Optional)
+      description: Desired state of motion time out blocker, choose on for on and off for off. If on, but the above entity is off, the time out scene never executes.
+      default: false
+      selector:
+        boolean:
+    elevation_check:
+      name: Sun elevation check (Optional)
+      description: This is the angle between the sun and the horizon. Negative values mean the sun is BELOW the horizon.
+      default: none
+      selector:
+        number:
+          min: -90
+          max: 90
+          unit_of_measurement: degrees
+    lux_min:
+      name: Minimum Lux Value (Optional)
+      description: The lowest value the scene will be triggered at. If the light sensor is below this value, the scene will not run.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 100000
+          unit_of_measurement: lux
+    lux_max:
+      name: Maximum Lux Value (Optional)
+      description: The highest value the scene will be triggered at. If the light sensor is above this value, the scene will not run.
+      default: 100000
+      selector:
+        number:
+          min: 1
+          max: 100000
+          unit_of_measurement: lux
+    scene_ambient:
+      name: Ambient Scene (Optional)
+      description: Scene for ambient state. Will be activated when no motion is detected.
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    time_scene_ambient_start:
+      name: Ambient time frame start (Optional)
+      description: Time from which on ambient scene will be activated
+      default: "00:00:00"
+      selector:
+        time:
+    time_scene_ambient_end:
+      name: Ambient time frame end (Optional)
+      description: Time from which on ambient scene will be not activated
+      default: "00:00:00"
+      selector:
+        time:
+    scene_morning:
+      name: Morning Scene (Optional)
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    time_scene_morning:
+      name: Start time for the morning scene (Optional)
+      description: Start time for executing the morning scene. Before this time, the night scene will trigger.
+      default: "06:30:00"
+      selector:
+        time:
+    scene_day:
+      name: Day Scene (Optional)
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    time_scene_day:
+      name: Start time for the day scene (Optional)
+      description: Start time for executing the day scene. Before this time, the morning scene will trigger.
+      default: "08:30:00"
+      selector:
+        time:
+    scene_evening:
+      name: Evening Scene (Optional)
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    time_scene_evening:
+      name: Start time for the evening scene (Optional)
+      description: Start time for executing the evening scene. Before this time, the day scene will trigger.
+      default: "18:00:00"
+      selector:
+        time:
+    scene_night:
+      name: Night Scene (Optional)
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    time_scene_night:
+      name: Start time for the night scene (Optional)
+      description: Start time for executing the night scene. Before this time, the evening scene will trigger.
+      default: "22:00:00"
+      selector:
+        time:
+    scene_no_motion:
+      name: Motion Time Out Scene (Optional)
+      description: Scene to trigger when the motion state times out.
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    sleep_mode_entity:
+      name: Sleep Mode Entity (Optional)
+      description: If specified, the sleep mode override scene will always trigger when the entity is on.
+      default: input_boolean.sleep_mode
+      selector:
+        entity:
+    scene_sleep_mode:
+      name: Sleep Mode Scene (Optional)
+      description: Scene to trigger if the sleep mode entity is on.
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  scene_ambient: !input scene_ambient
+  scene_morning: !input scene_morning
+  scene_day: !input scene_day
+  scene_evening: !input scene_evening
+  scene_night: !input scene_night
+  scene_sleep: !input scene_sleep_mode
+  automation_blocker: !input automation_blocker
+  automation_blocker_boolean: !input automation_blocker_boolean
+  alarm_state_blocker: !input alarm_state_blocker
+  no_motion_blocker: !input no_motion_blocker
+  no_motion_blocker_boolean: !input no_motion_blocker_boolean
+  elevation_check: !input elevation_check
+  light_sensor: !input light_sensor
+  lux_min: !input lux_min
+  lux_max: !input lux_max
+  scene_no_motion: !input scene_no_motion
+  motion_entity: !input motion_entity
+  sleep_mode: !input sleep_mode_entity
+
+trigger:
+  - platform: state
+    entity_id: !input motion_entity
+    from: "off"
+    to: "on"
+  - platform: state
+    entity_id: !input motion_entity
+    from: "on"
+    to: "off"
+    for: !input no_motion_wait
+
+# All Conditions must be true
+condition:
+  # Check if automation blocker exist or is in desired state, otherwise do not run
+  - condition: or
+    conditions:
+      - "{{ automation_blocker == none }}"
+      - "{{ automation_blocker_boolean and states[automation_blocker].state == 'on' }}"
+      - "{{ not automation_blocker_boolean and states[automation_blocker].state == 'off' }}"
+  # Check if alarm override exist or is in desired state, otherwise do not run
+  - condition: or
+    conditions:
+      - "{{ alarm_state_blocker == none }}"
+      - "{{ states[alarm_state_blocker].state == 'disarmed' }}"
+  # Check if elevation input exists or is below desired value, otherwise do not run
+  - condition: template
+    value_template: "{{ (elevation_check == none) or (state_attr('sun.sun','elevation') <= elevation_check | float(90)) }}"
+  # Check if light sensors exists and is within desired value range, otherwise do not run
+  - condition: template
+    value_template: "{{ iif(is_number(states(light_sensor)), ((states(light_sensor) | int ) >= ( lux_min | int ) and (states(light_sensor) | int ) <= ( lux_max | int ))) }}"
+
+action:
+  - choose:
+      # Trigger to state == "on"
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+        sequence:
+          - choose:
+              # Sleep Scene
+              - conditions:
+                  - "{{ sleep_mode == 'on' }}"
+                sequence:
+                  - scene: !input scene_sleep_mode
+              # Morning Scene
+              - conditions:
+                  - "{{ scene_morning != 'scene.none'}}"
+                  - condition: time
+                    after: !input time_scene_morning
+                    before: !input time_scene_day
+                sequence:
+                  - scene: !input scene_morning
+              # Day Scene
+              - conditions:
+                  - "{{ scene_day != 'scene.none'}}"
+                  - condition: time
+                    after: !input time_scene_day
+                    before: !input time_scene_evening
+                sequence:
+                  - scene: !input scene_day
+              # Evening Scene
+              - conditions:
+                  - "{{ scene_evening != 'scene.none'}}"
+                  - condition: time
+                    after: !input time_scene_evening
+                    before: !input time_scene_night
+                sequence:
+                  - scene: !input scene_evening
+              # Night Scene
+              - conditions:
+                  - "{{ scene_night != 'scene.none'}}"
+                  - condition: time
+                    after: !input time_scene_night
+                    before: !input time_scene_morning
+                sequence:
+                  - scene: !input scene_night
+            # If State -> "On" defaulting to turn light on
+            default:
+              - service: light.turn_on
+                target: !input light_target
+      # Trigger to state = "off"
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'off' }}"
+          # Check if no motion blocker exist or in in desired state, otherwise do not run any no motion action
+          - condition: or
+            conditions:
+              - "{{ no_motion_blocker == none }}"
+              - "{{ no_motion_blocker_boolean and states[no_motion_blocker].state == 'on' }}"
+              - "{{ not no_motion_blocker_boolean and states[no_motion_blocker].state == 'off' }}"
+        sequence:
+          - choose:
+              # Used if ambient scene is true and in ambient scene time frame
+              - conditions:
+                  - "{{ scene_ambient != 'scene.none' }}"
+                  - condition: time
+                    after: !input time_scene_ambient_start
+                    before: !input time_scene_ambient_end
+                sequence:
+                  - scene: !input scene_ambient
+              # Used if default no motion scene is set
+              - conditions:
+                  - "{{ scene_no_motion != 'scene.none' }}"
+                sequence:
+                  - scene: !input scene_no_motion
+              # If State -> "off" default to turn lights off
+            default:
+              - service: light.turn_off
+                target: !input light_target

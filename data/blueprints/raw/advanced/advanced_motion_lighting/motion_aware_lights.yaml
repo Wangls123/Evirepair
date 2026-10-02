@@ -1,0 +1,272 @@
+blueprint:
+  name: Motion-Aware Light Control
+  description: >
+    Automatically controls lights based on motion detection, with optional conditions for illuminance and binary sensors. 
+    The automation can be disabled using binary sensors (e.g., sleep mode or movie watching) to prevent lights from turning on under certain conditions.
+    Additionally, if the lights were already turned on and motion is detected, the automation will wait for the motion detection to clear before turning off the lights.
+
+  domain: automation
+  source_url: https://gist.github.com/pavax/ce9559c428b9a3c369ce79ef215ef1e2
+  homeassistant:
+    min_version: 2024.6.0
+
+  input:
+    motion_sensor_section:
+      name: Trigger sensor settings
+      icon: mdi:motion-sensor
+      description: >
+        Configuration for the motion sensor that will trigger light control actions. You can also set the timeout period for inactivity before the lights turn off after motion stops.
+      input:
+        motion_sensor:
+          name: Motion Sensor
+          description: >
+            The motion sensor that detects movement and triggers the lights when motion is detected.
+          selector:
+            entity:
+              filter:
+                domain: binary_sensor
+                device_class:
+                  - motion
+                  - occupancy
+                  - presence
+
+        no_motion_wait:
+          name: Motion Inactivity Timeout
+          description: >
+            The time (in seconds) that the automation will wait after motion stops before turning off the lights.
+          default: 120
+          selector:
+            number:
+              min: 0
+              max: 3600
+              unit_of_measurement: seconds
+
+    light_section:
+      name: Lights
+      icon: mdi:lightbulb
+      description: >
+        Configuration for the lights that will be controlled by this automation. You can define specific effects, scenes, and transitions for the lights
+      input:
+        lights:
+          name: Lights to Control
+          description: >
+            List of lights to control using this automation.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain: light
+              multiple: true
+
+        effect:
+          name: Light Effect (Optional)
+          description: >
+            Effects to apply when turning on the lights (e.g., fade, blink, etc.).
+          default: ""
+          selector:
+            text:
+
+        target_scene:
+          name: Scene (Optional)
+          description: >
+            Predefined scene to activate instead of controlling individual lights.
+          default:
+          selector:
+            entity:
+              filter:
+                domain: scene
+
+        transition_time:
+          name: Transition Time
+          description: >
+            The duration (in seconds) for the lights to fade in or out when changing states.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 30
+              unit_of_measurement: seconds
+
+    settings_section:
+      name: Condition settings
+      icon: mdi:cog
+      description: >
+        Specify sensors that prevent the lights from turning on. 
+        This blueprint will also trigger when one of these sensors changes state. 
+        For example, if you've set up a condition where the lights should not turn on while the TV is playing, and the TV stops playing, the blueprint will reevaluate the conditions. 
+        If motion is still detected, the lights will turn on, and the automation will wait for the motion sensor to clear.
+
+      input:
+        illuminance_sensor:
+          name: Illuminance Sensor (Optional)
+          description: >
+            An optional sensor that measures the ambient brightness in the room, which can be used to decide if the lights should be turned on.
+          default:
+          selector:
+            entity:
+              filter:
+                domain: sensor
+                device_class: illuminance
+
+        illuminance_threshold:
+          name: Illuminance Threshold (Optional)
+          description: >
+            The lux level below which the lights should be turned on. If the ambient light is below this threshold, the lights will be triggered by motion.
+          default: 300
+          selector:
+            number:
+              min: 0
+              max: 100000
+              unit_of_measurement: lux
+
+        binary_sensor_entity:
+          name: Activation conditions (Optional)
+          description: >
+            A list of entities (e.g., `binary_sensor` or `input_boolean`) that must be `on` for the lights to turn on. 
+            This can be used for conditions like 'Night Mode' or other scenarios where you only want lights to activate under certain conditions.
+            If you specify more that one ALL of them must be `on`.
+          default:
+          selector:
+            entity:
+              filter:
+                domain: binary_sensor
+              multiple: true
+
+        condition_entity:
+          name: Preventing conditions (Optional)
+          description: >
+            A list of entities (e.g., `binary_sensor` or `input_boolean`) that, when in the `on` state, will prevent the lights from turning on. 
+            For example, if a TV is playing, it might prevent the lights from turning on.
+            If you specify more that one ALL of them must be `off`.
+          default:
+          selector:
+            entity:
+              filter:
+                domain:
+                  - binary_sensor
+                  - input_boolean
+              multiple: true
+
+mode: restart
+max_exceeded: silent
+
+trigger_variables:
+  motion_sensor: !input motion_sensor
+  lights: !input lights
+  condition_entity: !input condition_entity
+  binary_sensor_entity: !input binary_sensor_entity
+
+variables:
+  lights: !input lights
+  illuminance_sensor: !input illuminance_sensor
+  illuminance_threshold: !input illuminance_threshold
+  binary_sensor_entity: !input binary_sensor_entity
+  transition_time: !input transition_time
+  target_scene: !input target_scene
+  effect: !input effect
+
+trigger:
+  - trigger: template
+    id: motion sensor triggered
+    value_template: "{{ motion_sensor != none and is_state(motion_sensor, 'on')}}"
+
+  - trigger: template
+    id: all activation condition entities are turned on
+    value_template: "{{ binary_sensor_entity != none and expand(binary_sensor_entity) | selectattr('state', 'eq', 'off') | list | count == 0}}"
+
+  - trigger: template
+    id: all preventing condition entities are turned off
+    value_template: "{{ condition_entity != none and expand(condition_entity) | selectattr('state', 'eq', 'on') | list | count == 0}}"
+
+  - trigger: template
+    id: light turned on manually
+    value_template: "{{ expand(lights) | selectattr('state', 'eq', 'on') | list | count > 0}}"
+
+condition:
+  - alias: check if there is a motion
+    condition: state
+    entity_id: !input motion_sensor
+    state: "on"
+
+  - alias: all preventing conditions are off
+    condition: template
+    value_template: "{{ condition_entity == none or expand(condition_entity) | selectattr('state', 'eq', 'on') | list | count == 0}}"
+
+  - alias: check activation or illuminance sensor
+    condition: or
+    conditions:
+      - alias: all activation condition are on
+        condition: template
+        value_template: "{{ binary_sensor_entity == none or expand(binary_sensor_entity) | selectattr('state', 'eq', 'on') | list | count == 0}}"
+
+      - alias: illuminance low
+        condition: template
+        value_template: "{{ illuminance_sensor != none and states(illuminance_sensor)|int  <  illuminance_threshold|int }}"
+
+      - alias: "no conditions defined"
+        condition: template
+        value_template: "{{ illuminance_sensor == none and binary_sensor_entity == none }}"
+
+action:
+  - if:
+      - alias: "All lights are off"
+        condition: template
+        value_template: "{{ expand(lights) | selectattr('state', 'eq', 'on') | list | count == 0 }}"
+    then:
+      - choose:
+          - alias: apply a scene
+            conditions:
+              - condition: template
+                value_template: "{{ target_scene is not none }}"
+            sequence:
+              - action: scene.turn_on
+                target:
+                  entity_id: !input target_scene
+                data:
+                  transition: "{{ transition_time }}"
+          - alias: apply a effect
+            conditions:
+              - condition: template
+                value_template: "{{ effect is not none }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: !input lights
+                data:
+                  transition: "{{ transition_time }}"
+                  effect: "{{ effect }}"
+        default:
+          - action: light.turn_on
+            target:
+              entity_id: !input lights
+            data:
+              transition: "{{ transition_time }}"
+
+  - wait_for_trigger:
+      - alias: motion cleared
+        trigger: state
+        entity_id: !input motion_sensor
+        from: "on"
+        to: "off"
+        for: !input no_motion_wait
+      - alias: lights manually turned off
+        trigger: template
+        value_template: "{{ expand(lights) | selectattr('state', 'eq', 'on') | list | count == 0 }}"
+
+  - condition: "{{ expand(lights) | selectattr('state', 'eq', 'on') | list | count > 0 }}"
+
+  - if:
+      - condition: template
+        value_template: "{{ transition_time is defined and transition_time | int > 0 }}"
+    then:
+      - alias: turn off lights without transition
+        action: light.turn_off
+        target:
+          entity_id: !input lights
+    else:
+      - alias: turn off lights with transition
+        action: light.turn_off
+        target:
+          entity_id: !input lights
+        data:
+          transition: "{{ transition_time }}"

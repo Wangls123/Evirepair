@@ -1,0 +1,200 @@
+blueprint:
+  name: IKEA MYGGBETT E2492 Door/Window Sensor (Matter) v2.0
+  description: 'Full-featured automation for the IKEA MYGGBETT E2492 Matter door/window sensor. 
+    Supports immediate and delayed actions for both opened and closed states, plus battery alerts.
+    '
+  domain: automation
+  source_url: https://github.com/aledziko/HA-blueprints/blob/main/IKEA/Matter/ikea-myggbett-e2492/ikea-myggbett-e2492-matter-door-sensor.yaml
+  author: aledziko
+  input:
+    # Door/Window Settings
+    door_entity:
+      name: MYGGBETT Door Sensor
+      description: Select the MYGGBETT door/window sensor (binary_sensor).
+      selector:
+        entity:
+          filter:
+            - device_class: door
+              domain: binary_sensor
+            - device_class: window
+              domain: binary_sensor
+            - device_class: opening
+              domain: binary_sensor
+    
+    use_time_window:
+      name: Enable Active Hours?
+      description: Restrict automation to a specific time window.
+      default: false
+      selector:
+        boolean: {}
+    active_start_time:
+      name: Active Start Time
+      description: Automation starts working at this time (if enabled).
+      default: "08:00:00"
+      selector:
+        time: {}
+    active_end_time:
+      name: Active End Time
+      description: Automation stops working at this time (if enabled).
+      default: "22:00:00"
+      selector:
+        time: {}
+    # Opened State
+    action_opened_immediate:
+      name: "Action: Door Opened (Immediate)"
+      description: Run immediately when the door is opened.
+      default: []
+      selector:
+        action: {}
+    wait_opened_long:
+      name: "Wait time (Opened Long)"
+      description: Time to wait before running the "Opened Long" action (0 to disable).
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    action_opened_long:
+      name: "Action: Door Opened (Long)"
+      description: Run if the door remains open for the specified wait time.
+      default: []
+      selector:
+        action: {}
+
+    # Closed State Settings
+    action_closed_immediate:
+      name: "Action: Door Closed (Immediate)"
+      description: Run immediately when the door is closed.
+      default: []
+      selector:
+        action: {}
+    wait_closed_long:
+      name: "Wait time (Closed Long)"
+      description: Time to wait before running the "Closed Long" action (0 to disable).
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    action_closed_long:
+      name: "Action: Door Closed (Long)"
+      description: Run if the door remains closed for the specified wait time.
+      default: []
+      selector:
+        action: {}
+
+    # Battery Settings
+    battery_entity:
+      name: (Optional) Battery Sensor
+      description: Select the battery level sensor (sensor.battery).
+      default: []
+      selector:
+        entity:
+          filter:
+            domain: sensor
+            device_class: battery
+    battery_low_threshold:
+      name: (Optional) Battery Low Level
+      description: Threshold for battery alert (%).
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    battery_low_action:
+      name: "Action: Battery Low"
+      description: Run when battery drops below threshold.
+      default: []
+      selector:
+        action: {}
+
+mode: parallel
+max_exceeded: silent
+
+trigger_variables:
+  door_entity_input: !input door_entity
+  battery_entity_input: !input battery_entity
+  battery_threshold_input: !input battery_low_threshold
+  wait_opened_long_input: !input wait_opened_long
+  wait_closed_long_input: !input wait_closed_long
+  use_time_window_input: !input use_time_window
+
+triggers:
+  - trigger: state
+    entity_id: !input door_entity
+    from: "off"
+    to: "on"
+    id: door_opened_immediate
+  - trigger: state
+    entity_id: !input door_entity
+    from: "off"
+    to: "on"
+    for:
+      seconds: !input wait_opened_long
+    id: door_opened_long
+  - trigger: state
+    entity_id: !input door_entity
+    from: "on"
+    to: "off"
+    id: door_closed_immediate
+  - trigger: state
+    entity_id: !input door_entity
+    from: "on"
+    to: "off"
+    for:
+      seconds: !input wait_closed_long
+    id: door_closed_long
+  - trigger: template
+    value_template: >
+      {{ battery_entity_input != none and battery_entity_input != [] and battery_entity_input != '' and 
+         states(battery_entity_input) | is_number and 
+         states(battery_entity_input) | float(100) < battery_threshold_input | float(-1) }}
+    id: battery_low
+
+condition:
+  - condition: or
+    conditions:
+      - condition: template
+        value_template: "{{ not use_time_window_input }}"
+      - condition: time
+        after: !input active_start_time
+        before: !input active_end_time
+
+actions:
+  - choose:
+      # DOOR OPENED (IMMEDIATE)
+      - conditions:
+          - condition: trigger
+            id: door_opened_immediate
+        sequence: !input action_opened_immediate
+
+      # DOOR OPENED (LONG)
+      - conditions:
+          - condition: trigger
+            id: door_opened_long
+          - condition: template
+            value_template: "{{ wait_opened_long_input | int > 0 }}"
+        sequence: !input action_opened_long
+
+      # DOOR CLOSED (IMMEDIATE)
+      - conditions:
+          - condition: trigger
+            id: door_closed_immediate
+        sequence: !input action_closed_immediate
+
+      # DOOR CLOSED (LONG)
+      - conditions:
+          - condition: trigger
+            id: door_closed_long
+          - condition: template
+            value_template: "{{ wait_closed_long_input | int > 0 }}"
+        sequence: !input action_closed_long
+
+      # BATTERY LOW
+      - conditions:
+          - condition: trigger
+            id: battery_low
+        sequence: !input battery_low_action
