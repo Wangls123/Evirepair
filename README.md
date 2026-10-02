@@ -1,0 +1,2 @@
+# Evirepair-Evidence-Driven-Behavioral-Repair-for-Smart-Home-Automations
+EviRepair provides evidence-driven repair of smart-home execution behaviors using automation contracts, device states, and runtime context. It preserves, removes, modifies or recovers actions, using provenance to refine interactions among automations. Its deterministic inference requires no LLM calls and preserves persistent automation definitions.
