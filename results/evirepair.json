@@ -1,0 +1,40 @@
+{
+  "method_id": "ss_trhr_v1",
+  "llm": false,
+  "entry": "repair_sample(llm=None) then apply_strict_v2; multi-action then map_repaired, drop recovered notify.mobile_app and logbook.log adds, set_remove_v1, apply_generic_gate, apply_verifier",
+  "single_scene_benchmark": "data/benchmarks/single_scene.jsonl",
+  "single_scene_reference": "data/references/single_scene_gold_y.jsonl",
+  "multi_action_benchmark": "data/benchmarks/multi_action.jsonl",
+  "multi_action_reference": "embedded on each parent and read by ma_y_acts",
+  "dataset_sha256": {
+    "single_scene": "a536deed81e0c8e763db3d9862f6c812326efaa6de7be86cf8d45fd7cb41db1e",
+    "single_scene_reference": "fc25b6d45f3eb9cfec838ba8c296204c394a7514332a77fb1b086c177326d8fd",
+    "multi_action": "8464dbd2bcef60f1ce096e7bde0638d83d7e8bf26ee9168159f60d46459038b7"
+  },
+  "single_scene": {
+    "N": 12021,
+    "EM": 0.79,
+    "EM_count": "9497/12021",
+    "RSR": 0.7314,
+    "RSR_count": "6386/8731",
+    "FRR": 0.0149,
+    "FRR_count": "179/12021",
+    "correct_B0": 3290
+  },
+  "multi_action": {
+    "N": 2400,
+    "Parent_Set_Exact_Match": 0.4983,
+    "Parent_Set_Exact_count": 1196,
+    "Action_Precision": 0.5568,
+    "Action_Recall": 0.5592,
+    "Action_F1": 0.5515,
+    "False_Parent_Repair": 0.0008,
+    "False_Parent_Repair_count": 2,
+    "Preservation": 0.0,
+    "Preservation_count": 0,
+    "correct_B0_count": 2,
+    "mean_action_count": 0.7421,
+    "set_remove_fired": 258
+  },
+  "elapsed_s": 93.631
+}
